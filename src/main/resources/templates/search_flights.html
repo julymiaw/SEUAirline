@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Search Flights</title>
+</head>
+<body>
+    <h1>Search Flights</h1>
+    <form method="POST" action="/search_flights">
+        <label>Departure Airport:</label>
+        <input type="text" name="departure_airport" list="departure_airports" required><br>
+        <datalist id="departure_airports">
+            <!-- 机场列表将通过JavaScript动态填充 -->
+        </datalist>
+
+        <label>Arrival Airport:</label>
+        <input type="text" name="arrival_airport" list="arrival_airports" required><br>
+        <datalist id="arrival_airports">
+            <!-- 机场列表将通过JavaScript动态填充 -->
+        </datalist>
+
+        <label>Departure Date:</label>
+        <input type="date" name="departure_date" required><br>
+
+        <button type="submit">Search</button>
+    </form>
+
+    <script>
+        // 获取输入框和datalist元素
+        const departureInput = document.querySelector('input[name="departure_airport"]');
+        const arrivalInput = document.querySelector('input[name="arrival_airport"]');
+        const departureDatalist = document.getElementById('departure_airports');
+        const arrivalDatalist = document.getElementById('arrival_airports');
+
+        // 为输入框添加事件监听器
+        departureInput.addEventListener('input', fetchAirports);
+        arrivalInput.addEventListener('input', fetchAirports);
+
+        // 获取匹配的机场列表
+        async function fetchAirports(event) {
+            const input = event.target;
+            const datalist = input.list;
+            const value = input.value;
+
+            if (value.length < 3) return; // 输入长度小于3时不请求
+
+            const response = await fetch(`/api/airports?query=${value}`);
+            const airports = await response.json();
+
+            // 清空现有的选项
+            datalist.innerHTML = '';
+
+            // 添加新的选项
+            airports.forEach(airport => {
+                const option = document.createElement('option');
+                option.value = airport.AirportName;
+                option.text = `${airport.AirportName} (${airport.AirportID})`;
+                datalist.appendChild(option);
+            });
+        }
+    </script>
+</body>
+</html>

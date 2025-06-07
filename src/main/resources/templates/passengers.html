@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>添加乘机人</title>
+    <link rel="stylesheet" href="/static/css/base/style.css">
+    <link rel="stylesheet" href="/static/css/base/main.css">
+    <link rel="stylesheet" href="/static/css/base/homepage.css">
+    <style>
+        body {
+            font-size: 16px;
+            background-color: #ffffff;
+            /* 设置背景颜色为白色 */
+            color: #555555;
+            /* 设置文本颜色为灰色 */
+        }
+
+        .hd {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #ffffff;
+            /* 白色背景 */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 0 20px;
+            height: 5vh;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #555555;
+            /* 灰色文本 */
+            font-size: 16px;
+            margin: 0 10px;
+            padding: 10px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .nav-links a:hover {
+            background-color: #f4f4f4;
+            /* 灰色背景 */
+            color: #ff0000;
+            /* 红色文本 */
+        }
+
+        .company-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: darkgreen;
+        }
+
+        .passenger-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .passenger-table th,
+        .passenger-table td {
+            border: 1px solid #ddd;
+            /* 设置边框颜色为灰色 */
+            padding: 10px;
+            text-align: left;
+        }
+
+        .passenger-table th {
+            background-color: #f4f4f4;
+            /* 设置表头背景颜色为灰色 */
+            color: #555555;
+            /* 设置表头文本颜色为灰色 */
+        }
+
+        .form-container {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            /* 设置边框颜色为灰色 */
+            border-radius: 5px;
+            background-color: #ffffff;
+            /* 设置表单容器背景颜色为白色 */
+            color: #555555;
+            /* 设置表单容器文本颜色为灰色 */
+        }
+
+        .form-container label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+
+        .form-container input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            /* 设置边框颜色为灰色 */
+            border-radius: 5px;
+            background-color: #ffffff;
+            /* 设置输入框背景颜色为白色 */
+            color: #555555;
+            /* 设置输入框文本颜色为灰色 */
+        }
+
+        .form-container button {
+            padding: 10px 15px;
+            background-color: #ff0000;
+            /* 设置按钮背景颜色为红色 */
+            color: white;
+            /* 设置按钮文本颜色为白色 */
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .form-container button:hover {
+            background-color: #cc0000;
+            /* 设置按钮悬停背景颜色为深红色 */
+        }
+
+        .no-passengers {
+            margin-top: 20px;
+            font-style: italic;
+            color: #555555;
+            /* 设置无乘车人提示文本颜色为灰色 */
+        }
+    </style>
+</head>
+
+<body>
+    <div id="content" class="main">
+        <div class="hd">
+            <div class="nav-links">
+                <a href="/homepage">首页</a>
+                <a href="/dashboard">用户主页</a>
+                <a href="/">登录页面</a>
+                <a href="/logout">登出</a>
+            </div>
+            <div class="company-name">东南航空</div>
+        </div>
+        <div class="wc user-home">
+            <div class="box-home box">
+                <h1>添加乘车人</h1>
+
+                {% if guests %}
+                <table class="passenger-table">
+                    <thead>
+                        <tr>
+                            <th>乘车人ID</th>
+                            <th>姓名</th>
+                            <th>邮箱</th>
+                            <th>电话</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for guest in guests %}
+                        <tr>
+                            <td>{{ guest.guest_id }}</td>
+                            <td>{{ guest.name }}</td>
+                            <td>{{ guest.email }}</td>
+                            <td>{{ guest.phone }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="no-passengers">未找到乘车人信息。</p>
+                {% endif %}
+
+                <div class="form-container">
+                    <form action="/admin/insert_passenger" method="POST">
+                        <label for="Phone">电话:</label>
+                        <input type="text" id="Phone" name="Phone" required>
+
+                        <label for="Identity">身份证号:</label>
+                        <input type="text" id="Identity" name="Identity" required>
+
+                        <label for="Name">姓名:</label>
+                        <input type="text" id="Name" name="Name" required>
+
+                        <button type="submit">添加乘车人</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

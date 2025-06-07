@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="utf-8">
+    <title>注册/登录页面</title>
+    <style>
+        body {
+            font-family: "Trebuchet MS", sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .hd {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #ffffff;
+            /* 白色背景 */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 0 20px;
+            height: 5vh;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #555555;
+            /* 灰色文本 */
+            font-size: 16px;
+            margin: 0 10px;
+            padding: 10px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .nav-links a:hover {
+            background-color: #f4f4f4;
+            /* 灰色背景 */
+            color: #ff0000;
+            /* 红色文本 */
+        }
+
+        .company-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: darkgreen;
+        }
+
+        .login {
+            min-height: 60%;
+            height: 95vh;
+            background: url('/static/images/login_background.jpg');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .login .login-box {
+            position: absolute;
+            top: 50%;
+            left: 75%;
+            transform: translate(-50%, -50%);
+        }
+
+        .login-box {
+            width: 350px;
+            background: #fff;
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+            padding: 20px 30px 20px 30px;
+        }
+
+        .box-item-nav {
+            height: 37px;
+            margin-bottom: 20px;
+        }
+
+        .box-item-nav .item-li {
+            float: left;
+            color: #bdbdbd;
+            font-size: 14px;
+            text-align: center;
+            width: 50%;
+            height: 37px;
+            line-height: 37px;
+            cursor: pointer;
+        }
+
+        .box-item-nav .item-li-on {
+            background-color: #d7000f;
+            color: white;
+        }
+
+        .box-item-con .item {
+            display: none;
+        }
+
+        .box-item-con .item.active {
+            display: block;
+        }
+
+        .ui-button {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .input-item .input {
+            display: block;
+            width: 95%;
+            font-size: 16px;
+            color: #333;
+            background: #fff;
+            border: 1px solid #dadfe3;
+            padding-left: 5%;
+            height: 50px;
+            line-height: 50px;
+            border-radius: 4px;
+            -webkit-appearance: none;
+            outline: 0;
+        }
+
+        .btn {
+            display: inline-block;
+            min-width: 80px;
+            padding: 0 20px;
+            height: 36px;
+            line-height: 36px;
+            background-color: #d8000f;
+            text-align: center;
+            cursor: pointer;
+            border: 1px solid #d8000f;
+            border-radius: 4px;
+            color: #fff;
+        }
+
+        .btn:hover {
+            background-color: #ba000d;
+        }
+
+        .login-row {
+            margin-bottom: 20px;
+            line-height: 24px;
+        }
+
+        .login-row.login-btn {
+            margin: 0 0 10px 0;
+        }
+
+        .btn.btn-form {
+            width: 350px;
+            height: 50px;
+            line-height: 50px;
+        }
+
+        .btn-link {
+            font-size: 14px;
+            color: #2d83d8;
+            cursor: pointer;
+        }
+
+        .login-row.login-tips .password-tip {
+            float: right;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="hd">
+        <div class="nav-links">
+            <a href="/homepage">首页</a>
+            <a href="/dashboard">用户主页</a>
+            <a href="/">登录页面</a>
+            <a href="/logout">登出</a>
+        </div>
+        <div class="company-name">东南航空</div>
+    </div>
+
+    <div class="login">
+        <div class="login-box">
+            <div class="box-item-nav">
+                <span class="item-li item-li-on" data-target="#login">登录</span>
+                <span class="item-li" data-target="#register">注册</span>
+            </div>
+            <div class="box-item-con">
+                <div id="login" class="item active">
+                    <form id="login-form">
+                        <div class="login-row">
+                            <div class="input-item">
+                                <input type="text" id="login-identifier" name="identifier" class="input"
+                                    placeholder="身份证号/手机号/邮箱">
+                            </div>
+                        </div>
+                        <div class="login-row">
+                            <div class="input-item">
+                                <input type="password" id="login-password" name="password" class="input"
+                                    placeholder="密码">
+                            </div>
+                        </div>
+                        <div class="login-row login-btn">
+                            <button type="submit" class="btn btn-form">登录</button>
+                        </div>
+                        <div class="login-row login-tips">
+                            <a id="forgot-password" class="btn-link password-tip">忘记密码</a>
+                        </div>
+                    </form>
+                </div>
+                <div id="register" class="item">
+                    <form id="register-form">
+                        <div class="login-row">
+                            <div class="input-item">
+                                <input type="text" id="register-name" name="name" class="input" placeholder="姓名">
+                            </div>
+                        </div>
+                        <div class="login-row">
+                            <div class="input-item">
+                                <input type="text" id="register-id" name="id" class="input" placeholder="身份证号">
+                            </div>
+                        </div>
+                        <div class="login-row">
+                            <div class="input-item">
+                                <input type="text" id="register-phone" name="phone" class="input" placeholder="手机号">
+                            </div>
+                        </div>
+                        <div class="login-row">
+                            <div class="input-item">
+                                <input type="email" id="register-email" name="email" class="input" placeholder="邮箱">
+                            </div>
+                        </div>
+                        <div class="login-row">
+                            <div class="input-item">
+                                <input type="password" id="register-password" name="password" class="input"
+                                    placeholder="密码">
+                            </div>
+                        </div>
+                        <div class="login-row">
+                            <div class="input-item">
+                                <input type="password" id="register-confirm-password" name="confirm-password"
+                                    class="input" placeholder="确认密码">
+                            </div>
+                        </div>
+                        <div class="login-row login-btn">
+                            <button type="submit" class="btn btn-form">注册</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="/static/js/vendor/jquery-ui-1.14.1.custom/jquery-ui.js"></script>
+    <script>
+        $(function () {
+            $("button").button();
+
+            $(".box-item-nav .item-li").on("click", function () {
+                $(".box-item-nav .item-li").removeClass("item-li-on");
+                $(this).addClass("item-li-on");
+                $(".box-item-con .item").removeClass("active");
+                $($(this).data("target")).addClass("active");
+            });
+
+            $("#login-form").on("submit", function (event) {
+                event.preventDefault();
+                const username = $("#login-identifier").val();
+                const password = $("#login-password").val();
+                // 检查是否为空
+                if (!username || !password) {
+                    alert("用户名或密码不能为空！");
+                    return;
+                }
+                $.ajax({
+                    url: "/login",
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify({ username, password }),
+                    success: function (response) {
+                        if (response.status === "success") {
+                            window.location.href = "/homepage"; // 跳转到用户主页
+                        }
+                    },
+                    error: function () {
+                        alert("Login error. Please try again.");
+                    },
+                });
+            });
+
+
+            $("#register-form").on("submit", function (event) {
+                event.preventDefault();
+                const rname = $("#register-name").val();
+                const id = $("#register-id").val();
+                const email = $("#register-email").val();
+                const phone = $("#register-phone").val();
+                const password = $("#register-password").val();
+                const confirm = $("#register-confirm-password").val();
+                if (password != confirm) {
+                    alert("The two passwords do not match.");
+                    return;
+                }
+                $.ajax({
+                    url: "/register",
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify({ rname, id, email, phone, password, confirm }),
+                    success: function (response) {
+                        alert(response.message);
+                        if (response.status === "success") {
+                            window.location.href = "/";
+                            //alert("success")
+                        }
+                    },
+                    error: function () {
+                        alert("Registeration error. Please try again.");
+                    },
+                });
+            });
+
+
+            $("#forgot-password").on("click", function (event) {
+                event.preventDefault();
+                const email = prompt("Please enter your registered email:");
+                if (email) {
+                    const password = prompt("Reset your password:")
+                    if (password) {
+                        $.ajax({
+                            url: "/forget_password",
+                            type: "POST",
+                            contentType: "application/json",
+                            data: JSON.stringify({ email, password }),
+                            success: function (response) {
+                                alert(response.message);
+                            },
+                            error: function () {
+                                alert("An error occurred. Please try again.");
+                            },
+                        });
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

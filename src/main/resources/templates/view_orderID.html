@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <title>查看订单</title>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa; /* 浅灰背景 */
+            color: #333333; /* 深灰文本 */
+            font-size: 16px;
+            margin: 0;
+            padding: 0;
+        }
+
+        .hd {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #ffffff; /* 白色背景 */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 0 20px;
+            height: 5vh;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #555555; /* 灰色文本 */
+            font-size: 16px;
+            margin: 0 10px;
+            padding: 10px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .nav-links a:hover {
+            background-color: #f4f4f4; /* 灰色背景 */
+            color: #ff0000; /* 红色文本 */
+        }
+
+        .company-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: darkgreen;
+        }
+
+        h1 {
+            text-align: center;
+            color: #d9534f; /* 红色标题 */
+            margin-top: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            table-layout: fixed;
+        }
+
+        th, td {
+            border: 1px solid #ddd; /* 灰色边框 */
+            padding: 12px;
+            text-align: center;
+            word-wrap: break-word;
+        }
+
+        th {
+            background-color: #f4f4f4; /* 灰色表头 */
+            color: #555555; /* 深灰文本 */
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9; /* 白色背景 */
+        }
+
+        tr:hover {
+            background-color: #f1f1f1; /* 悬停时浅灰背景 */
+        }
+
+        .btn-red {
+            display: inline-block;
+            background-color: #d9534f; /* 红色按钮背景 */
+            color: #ffffff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-red:hover {
+            background-color: #c9302c; /* 深红色背景 */
+        }
+
+        .no-data {
+            text-align: center;
+            color: #999999;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="hd">
+        <div class="nav-links">
+            <a href="/homepage">首页</a>
+            <a href="/dashboard">用户主页</a>
+            <a href="/">登录页面</a>
+            <a href="/logout">登出</a>
+        </div>
+        <div class="company-name">东南航空</div>
+    </div>
+    <h1>您的订单</h1>
+    <div class="container">
+        {% if order %}
+        <table id="orders-table">
+            <thead>
+                <tr>
+                    <th>订单ID</th>
+                    <th>用户ID</th>
+                    <th>购买人ID</th>
+                    <th>航班ID</th>
+                    <th>座位类型</th>
+                    <th>状态</th>
+                    <th>订单时间</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ order.OrderID }}</td>
+                    <td>{{ order.CustomerID }}</td>
+                    <td>{{ order.BuyerID }}</td>
+                    <td>{{ order.FlightID }}</td>
+                    <td>{{ order.SeatType }}</td>
+                    <td>{{ order.OrderStatus }}</td>
+                    <td>{{ order.OrderTime }}</td>
+                </tr>
+            </tbody>
+        </table>
+        {% else %}
+        <p class="no-data">未找到订单信息。</p>
+        {% endif %}
+
+        <div style="text-align: center; margin-top: 20px;">
+            <a href="/homepage" class="btn-red">返回查询</a>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#orders-table').DataTable({
+                language: {
+                    search: "搜索:",
+                    lengthMenu: "显示 _MENU_ 条记录",
+                    info: "显示第 _START_ 至 _END_ 条记录，共 _TOTAL_ 条",
+                    infoEmpty: "显示第 0 至 0 条记录，共 0 条",
+                    infoFiltered: "(从 _MAX_ 条记录中过滤)",
+                    paginate: {
+                        first: "首页",
+                        last: "末页",
+                        next: "下一页",
+                        previous: "上一页"
+                    },
+                    zeroRecords: "没有找到记录",
+                    processing: "处理中...",
+                    loadingRecords: "加载中..."
+                }
+            });
+        });
+    </script>
+</body>
+</html>

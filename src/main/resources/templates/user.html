@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="utf-8">
+    <title>用户主页</title>
+    <link rel='stylesheet' href="/static/css/base/style.css" />
+    <link rel="stylesheet" href="/static/css/base/main.css" />
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <style>
+        body {
+            font-family: "Trebuchet MS", sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            /* 灰色背景 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            font-size: 18px;
+        }
+
+        .hd {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #ffffff;
+            /* 白色背景 */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 0 20px;
+            height: 5vh;
+            width: 100%;
+            position: fixed;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #555555;
+            /* 灰色文本 */
+            font-size: 16px;
+            margin: 0 10px;
+            padding: 10px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .nav-links a:hover {
+            background-color: #f4f4f4;
+            /* 灰色背景 */
+            color: #ff0000;
+            /* 红色文本 */
+        }
+
+        .company-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: darkgreen;
+        }
+
+        .content {
+            width: 100%;
+            height: 100%;
+            background-image: url('/static/images/background.jpg');
+            /* 背景图像 */
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            /* 使用 Flexbox 布局 */
+            justify-content: center;
+            /* 水平居中 */
+            align-items: center;
+            /* 垂直居中 */
+            padding: 70px 20px 20px;
+            /* 顶部留出导航栏的高度 */
+        }
+
+        .user-home {
+            background-color: #ffffff;
+            /* 白色背景 */
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            /* 确保在小屏幕上也能充满宽度 */
+            margin: 0 auto;
+            /* 保持水平居中 */
+        }
+
+        .user-info {
+            background-color: #f4f4f4;
+            /* 灰色背景 */
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .tab-nav {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .tab-li {
+            padding: 10px 15px;
+            cursor: pointer;
+            color: #555555;
+            /* 灰色文本 */
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .tab-li-on {
+            background-color: #d8000f;
+            /* 红色背景 */
+            color: white;
+            border-radius: 5px;
+        }
+
+        .tab-item {
+            display: none;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            background-color: #ffffff;
+            /* 白色背景 */
+        }
+
+        .tab-item.active {
+            display: block;
+        }
+
+        .btn-b {
+            display: flex;
+            /* 使用 Flexbox 布局 */
+            justify-content: center;
+            /* 水平居中 */
+            align-items: center;
+            /* 垂直居中 */
+            width: 100%;
+            padding: 10px;
+            background-color: #d8000f;
+            /* 红色按钮 */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+            text-align: center;
+            /* 文字居中 */
+        }
+
+        .btn-b:hover {
+            background-color: #ba000d;
+            /* 悬停时的红色按钮 */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="hd">
+        <div class="nav-links">
+            <a href="/homepage">首页</a>
+            <a href="/dashboard">用户主页</a>
+            <a href="/">登录页面</a>
+            <a href="/logout">登出</a>
+        </div>
+        <div class="company-name">东南航空</div>
+    </div>
+    <div class="content">
+        <div class="user-home">
+            <h1>欢迎，用户</h1>
+            <div class="user-info">
+                <p>用户名: <span id="username">{{ user["Name"] }}</span></p>
+                <p>邮箱: <span id="email">{{ user["Email"] }}</span></p>
+                <p>账户余额：<span id="remain">{{ user['AccountBalance'] }}</span></p>
+            </div>
+
+            <ul class="tab-nav">
+                <li class="tab-li tab-li-on" data-target="#personal-info"><span class="tab-i1">个人信息</span></li>
+                <li class="tab-li" data-target="#my-orders"><span class="tab-i1">我的订单</span></li>
+                <li class="tab-li" data-target="#account-settings"><span class="tab-i1">账户设置</span></li>
+                <li class="tab-li" data-target="#add-passenger"><span class="tab-i1">乘车人添加</span></li>
+            </ul>
+
+            <div class="tab-con">
+                <div id="personal-info" class="tab-item active">
+                    <h2>个人信息</h2>
+                    <p>查看或编辑您的个人信息。</p>
+                    <button class="btn-b">编辑信息</button>
+                </div>
+
+                <div id="my-orders" class="tab-item">
+                    <h2>我的订单</h2>
+                    <p>查看您的历史订单和状态。</p>
+                    <button class="btn-b" onclick="redirectToOrderPage()">查看订单</button>
+                </div>
+
+                <div id="account-settings" class="tab-item">
+                    <h2>账户设置</h2>
+                    <p>进行充值操作</p>
+                    <form id="charge-form" method="POST">
+                        <label for="money">充值金额:</label>
+                        <input type="number" id="money" name="money" required min="1" step="any"
+                            placeholder="请输入充值金额"><br>
+                        <button type="submit" class="btn-b">充值</button>
+                    </form>
+                </div>
+
+                <div id="add-passenger" class="tab-item">
+                    <h2>乘车人添加</h2>
+                    <p>添加相关乘车人信息。</p>
+                    <button class="btn-b" onclick="redirectToPassengerPage()">添加乘车人信息</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(function () {
+            // Tab切换逻辑
+            $(".tab-li").on("click", function () {
+                $(".tab-li").removeClass("tab-li-on");
+                $(this).addClass("tab-li-on");
+                $(".tab-item").hide();
+                $($(this).data("target")).show();
+            });
+
+            // 充值表单提交
+            $("#charge-form").on("submit", function (event) {
+                event.preventDefault(); // 阻止表单的默认提交行为
+
+                const money = $("#money").val(); // 获取充值金额
+                if (money) {
+                    $.ajax({
+                        url: "/charge",
+                        type: "POST",
+                        contentType: "application/json",
+                        data: JSON.stringify({ money: money }), // 将充值金额转换为浮点数并发送
+                        success: function (response) {
+                            alert(response.message); // 显示服务器返回的消息
+                            if (response.status === "success") {
+                                alert("充值成功，请刷新页面");
+                            }
+                        },
+                        error: function () {
+                            alert("充值失败，请稍后再试。"); // 显示错误消息
+                        },
+                    });
+                } else {
+                    alert("请输入有效的充值金额。"); // 提示用户输入有效的充值金额
+                }
+            });
+        });
+
+        function redirectToPassengerPage() {
+            window.location.href = '/passengers'; // 重定向到添加乘车人的页面
+        }
+
+        function redirectToOrderPage() {
+            window.location.href = '/view_orders'; // 重定向到查看订单的页面
+        }
+    </script>
+</body>
+
+</html>

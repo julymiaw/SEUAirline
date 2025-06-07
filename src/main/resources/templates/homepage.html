@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="utf-8">
+    <title>首页</title>
+    <link rel='stylesheet' href="/static/css/base/style.css" />
+    <link rel="stylesheet" href="/static/css/base/main.css" />
+    <link rel="stylesheet" href="/static/css/components/index.css" />
+    <link rel="stylesheet" href="/static/css/components/selectcity.css" />
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="/static/js/vendor/jquery-ui-1.14.1.custom/jquery-ui.js"></script>
+    <style>
+        /* 地图覆盖全屏样式 */
+        #map-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            /* 让地图在背景层 */
+            opacity: 0.7;
+            /* 设置透明度 */
+        }
+
+        .hd {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #ffffff;
+            /* 白色背景 */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 0 20px;
+            height: 5vh;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #555555;
+            /* 灰色文本 */
+            font-size: 16px;
+            margin: 0 10px;
+            padding: 10px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .nav-links a:hover {
+            background-color: #f4f4f4;
+            /* 灰色背景 */
+            color: #ff0000;
+            /* 红色文本 */
+        }
+
+        .company-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: darkgreen;
+        }
+
+        .content {
+            position: relative;
+            z-index: 10;
+            /* 确保内容在地图上方 */
+            margin: 40px auto;
+            /* 调整 margin-top 增加垂直间距 */
+            background-color: rgba(255, 255, 255, 0.9);
+            /* 半透明背景 */
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            width: 400px;
+            /* 固定宽度，可以根据需要调整 */
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 地图容器 -->
+    <div id="map-container">
+        <iframe src="/static/data/china_routes_airports_map.html" width="100%" height="100%" frameborder="0"></iframe>
+    </div>
+    <div id="content" class="main">
+        <div class="hd">
+            <div class="nav-links">
+                <a href="/homepage">首页</a>
+                <a href="/dashboard">用户主页</a>
+                <a href="/">登录页面</a>
+                <a href="/logout">登出</a>
+            </div>
+            <div class="company-name">东南航空</div>
+        </div>
+        <div class="wc home">
+            <div class="box-home box">
+                <ul class="tab-nav">
+                    <li class="tab-li tab-li-on"><span class="tab-i1">航班<br />预订</span></li>
+                    <li class="tab-li"><span class="tab-i1">航班<br />查询</span></li>
+                    <li class="tab-li"><span class="tab-i1">订单<br />查询</span></li>
+                </ul>
+                <div class="tab-con">
+                    <div class="tab-item">
+                        <div class="box-item-nav">
+                            <span class="item-li item-li-on" data-target="#oneway">单程</span>
+                            <span class="item-li" data-target="#return">往返</span>
+                        </div>
+                        <div class="radio-one">
+                            <form method="POST" id="searchForm" class="test-form">
+                                <div class="row">
+                                    <div class="text-from l text-con city-icon location-component">
+                                        <input id="origin-city" name="origin-city" class="text" placeholder="出发城市"
+                                            autocomplete="off" type="text">
+                                    </div>
+                                    <span class="change"><b>换</b></span>
+                                    <div class="text-to r text-con city-icon location-component">
+                                        <input id="destination-city" name="destination-city" class="text"
+                                            placeholder="到达城市" autocomplete="off" type="text">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="text-con text-cal cal-from icon-calendar l">
+                                        <input id="depart-date" name="depart-date" class="text" placeholder=""
+                                            type="text">
+                                        <label class="text-label">出发</label>
+                                    </div>
+                                    <div class="text-con text-cal cal-to icon-calendar r r-right">
+                                        <input id="return-date" name="return-date"
+                                            class="text text-disable input-fill r-right-child" placeholder=""
+                                            type="text" disabled>
+                                        <label class="text-label">返程</label>
+                                    </div>
+                                </div>
+                                <div class="item-b-index">
+                                    <a class="btn-b sensor-search" href="javascript:void(0);"
+                                        onclick="submitForm();">立即查询</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="tab-item tab-sev" style="display: none;">
+                        <div class="box-item-nav">
+                            <span class="item-li item-li-on" data-target="#city">按城市名</span>
+                            <span class="item-li" data-target="#flight">按航班号</span>
+                        </div>
+                        <div class="box-item-con">
+                            <div class="item tab-radio">
+                                <form id="searchForm-flightStatus" class="test-form" method="POST">
+                                    <div class="item-con">
+                                        <div id="conditionCityPair" class="radio-form-item item-city">
+                                            <div class="row">
+                                                <div class="text-from l text-con city-icon location-component">
+                                                    <input id="origin-city-status" name="origin-city-status"
+                                                        class="text" placeholder="出发城市" autocomplete="off" type="text">
+                                                </div>
+                                                <span class="change"><b>换</b></span>
+                                                <div class="text-to r text-con city-icon location-component">
+                                                    <input id="destination-city-status" name="destination-city-status"
+                                                        class="text" placeholder="到达城市" autocomplete="off" type="text">
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="text-con text-cal cal-from l">
+                                                    <input id="deptDate1" name="dptDate1" class="text" placeholder=""
+                                                        type="text">
+                                                    <label class="text-label">出发</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div id="conditionFlightNo" class="radio-form-item item-flight"
+                                            style="display: none;">
+                                            <div class="radio-item">
+                                                <div class="text-con row flight-code">
+                                                    <input id="flightNum" name="flightNum" class="text"
+                                                        placeholder="请输入航班号" type="text">
+                                                </div>
+                                                <div class="text-con text-cal cal-from l" style="margin-bottom: 10px;">
+                                                    <input id="deptDate2" name="dptDate2" class="text"
+                                                        placeholder="出发日期" type="text">
+                                                    <label class="text-label">出发</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="item-b-index">
+                                        <a class="btn-b btn-flightstatus" href="#" onclick="submitForm2();">立即查询</a>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-item tab-order" style="display: none;">
+                        <form id="myOrderForm" method="POST">
+                            <div class="text-con row">
+                                <input name="bookingSearch/TicketNumber" id="cardNo" type="text" class="text"
+                                    placeholder="请输入订单号">
+                            </div>
+                            <div class="text-con row">
+                                <input id="nonRegisterUserMobilePhone" name="mobilePhone" type="text" class="text"
+                                    placeholder="手机号">
+                            </div>
+                            <div class="item-b">
+                                <a name="queryOrderForNonRegistUser" class="btn-b btn-b-c" href="#"
+                                    onclick="submitForm3()"> 立即查询</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(function () {
+            $(".tab-li").on("click", function () {
+                $(".tab-li").removeClass("tab-li-on");
+                $(this).addClass("tab-li-on");
+                $(".tab-item").hide();
+                $(".tab-item").eq($(this).index()).show();
+            });
+
+            $(".box-item-nav .item-li").on("click", function () {
+                $(this).siblings().removeClass("item-li-on");
+                $(this).addClass("item-li-on");
+                const target = $(this).data("target");
+                if (target === "#oneway") {
+                    $("#return-date").addClass("text-disable").prop("disabled", true);
+                    $('.r-right-child').addClass('input-fill');
+                } else if (target === "#return") {
+                    $("#return-date").removeClass("text-disable").prop("disabled", false);
+                    $('.r-right-child').removeClass('input-fill');
+                    const returnDate = new Date();
+                    returnDate.setDate(returnDate.getDate() + 2);
+                    $("#return-date").val(returnDate.toISOString().split('T')[0]);
+                } else if (target === "#city") {
+                    $("#conditionCityPair").show();
+                    $("#conditionFlightNo").hide();
+                } else if (target === "#flight") {
+                    $("#conditionCityPair").hide();
+                    $("#conditionFlightNo").show();
+                }
+            });
+
+            const today = new Date().toISOString().split('T')[0];
+            $("#depart-date, #deptDate1, #deptDate2").val(today);
+
+            $("#depart-date, #return-date, #deptDate1, #deptDate2").datepicker({
+                dateFormat: "yy-mm-dd"
+            });
+            $(".city-icon .text").focus(function () {
+                $("body").find("#city_fields").remove();
+                $(this).parent().append("<div id='city_fields'></div>");
+                var a = $(this).parents().find("input[type='hidden']").attr("id");
+                if (
+                    $(this).parents().hasClass("location-component") ||
+                    a.indexOf("origin-city") != -1 ||
+                    a.indexOf("destination-city") != -1 ||
+                    a.indexOf("origin-city-status") != -1 ||
+                    a.indexOf("destination-city-status") != -1
+                ) {
+                    $.ajax({
+                        url: '/static/data/hotCity.html',
+                        success: function (data) {
+                            $("#city_fields").html(data);
+                            if (
+                                $(".select_results")
+                                    .parents(".location-component")
+                                    .find("input[id$='_input_location']")
+                                    .attr("id") == "selected_city_input_location"
+                            ) {
+                                var str = $(".select_results .tips").html();
+                                $(".select_results .tips").html(
+                                    str.split("（")[0] + str.split("）")[1]
+                                );
+                            }
+                        }
+                    });
+                }
+            });
+
+            $(document).on("click", ".select_results .hotCity .title .col", function () {
+                var sBody = $(this).attr("tips");
+                $(this).parents(".hotCity").find(".city").hide();
+                $(this).parents(".hotCity").find("#" + sBody).show();
+                $(this).parents(".hotCity").find(".title .col").removeClass("active");
+                $(this).addClass("active");
+                var sDivId = $(this).parents(".type_city_body").attr("id");
+                if ($(this).text() == "热门") {
+                    $(".select_results .tips b").text("热门城市");
+                } else {
+                    if (sDivId == "domestic_city") {
+                        $(".select_results .tips b").text("拼音" + $(this).text() + "城市");
+                    } else {
+                        $(".select_results .tips b").text($(this).text() + "城市");
+                    }
+                }
+                var sIframeHeight = $("#city_fields .select_results").height() + 10;
+                $("#iframe_ie6").css("height", sIframeHeight);
+            });
+
+            $(document).on("hover", ".select_results .hotCity .city li", function () {
+                $(".select_results .hotCity .city li").removeClass("hover");
+                $(this).addClass("hover");
+            });
+
+            $(document).on("click", ".select_results .hotCity .city li", function () {
+                $(this).parents("div.location-component").find("label").css("display", "none");
+                var sValue = $(this).find("span").text();
+                $(this).parents("div.location-component").find("input:text").val(sValue);
+                $(this).parents("div.location-component").find("input:text").attr("data-airportcode", $(this).attr("_3code"));
+                $(this).parents("div.location-component").find("input:text").focusout();
+                $("body").find("#city_fields,#iframe_ie6").remove();
+            });
+
+            $(document).on("click", ".select_results .tips span", function () {
+                $("body").find("#city_fields,#iframe_ie6").remove();
+            });
+
+            // 按回车键时直接隐藏 hot-city 框
+            $(".city-icon .text").on("keydown", function (e) {
+                if (e.key === "Enter") {
+                    $("body").find("#city_fields").remove();
+                }
+            });
+
+            $(".change").on("click", function () {
+                var from = $(this).prev(".text-from").children(".text"),
+                    to = $(this).next(".text-to").children(".text"),
+                    temp;
+                temp = from.val();
+                from.val(to.val());
+                to.val(temp);
+                if (!("placeholder" in document.createElement("input"))) {
+                    from.next(".text-label").text("");
+                    to.next(".text-label").text("");
+                }
+            });
+        });
+
+        function submitForm() {
+            // 获取表单数据，这里假设有一个id为"searchForm"的表单
+            var formData_depart = {
+                departure_airport: $("#origin-city").val(),
+                arrival_airport: $("#destination-city").val(),
+                departure_date: $("#depart-date").val(),
+            };
+            var formData_return = {
+                departure_airport: $("#destination-city").val(),
+                arrival_airport: $("#origin-city").val(),
+                departure_date: $("#return-date").val()
+            };
+            // 使用$.ajax调用后端接口
+            $.ajax({
+                url: '/search_flights', // 后端接口地址
+                type: 'POST', // 请求类型为POST
+                data: JSON.stringify(formData_depart), // 将表单数据转换为JSON字符串
+                contentType: 'application/json', // 设置请求头，告诉后端发送的是JSON格式数据
+                success: function (response) {
+                    alert(response.message);
+                    if (response.status === "success") {
+                        localStorage.setItem('flights_info', JSON.stringify(response.flights))
+                        window.location.href = "/choose_flight"; // 跳转到用户主页
+                    }
+                },
+                error: function (xhr, status, error) {
+                    // 请求失败，处理错误
+                    console.error('Error:', error);
+                    alert('Query failed!');
+                }
+            });
+            var returnDateInput = $("#return-date");
+            var return_date = returnDateInput.length > 0 && returnDateInput.val() ? returnDateInput.val() : null;
+            if (return_date) {
+                // 使用$.ajax调用后端接口
+                $.ajax({
+                    url: '/search_flights',
+                    type: 'POST',
+                    data: JSON.stringify(formData_return),
+                    contentType: 'application/json',
+                    success: function (response) {
+                        alert(response.message);
+                        if (response.status === "success") {
+                            window.location.href = "/flight_results"; // 跳转到用户主页
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        // 请求失败，处理错误
+                        console.error('Error:', error);
+                        alert('Query failed!');
+                    }
+                });
+            }
+        }
+        function submitForm2() {
+            // 上面的是预定航班的submitform  这个是查询航班的
+            var fnumInput = $("#flightNum");
+            var flightnum = fnumInput.length > 0 && fnumInput.val() ? fnumInput.val() : null;
+            if (flightnum) {
+                var formData = { flightnumber: fnumInput.val() }
+                $.ajax({
+                    url: '/search_flightnum',
+                    type: 'POST',
+                    data: JSON.stringify(formData),
+                    contentType: 'application/json',
+                    success: function (response) {
+                        alert(response.message);
+                    },
+                    error: function (xhr, status, error) {
+                        // 请求失败，处理错误
+                        console.error('Error:', error);
+                        alert('Query failed!');
+                    }
+                });
+            }
+            else {
+                var formData = {
+                    departure_airport: $("#origin-city-status").val(),
+                    arrival_airport: $("#destination-city-status").val(),
+                    departure_date: $("#deptDate1").val(),
+                };
+                // 使用$.ajax调用后端接口
+                $.ajax({
+                    url: '/search_flights', // 后端接口地址
+                    type: 'POST', // 请求类型为POST
+                    data: JSON.stringify(formData), // 将表单数据转换为JSON字符串
+                    contentType: 'application/json', // 设置请求头，告诉后端发送的是JSON格式数据
+                    success: function (response) {
+                        alert(response.message);
+                        if (response.status === "success") {
+                            window.location.href = "/homepage"; // 跳转到用户主页
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        // 请求失败，处理错误
+                        console.error('Error:', error);
+                        alert('Query failed!');
+                    }
+                });
+            }
+        }
+        function submitForm3() {
+            // submitform3 用于查询订单
+            var formData = {
+                order_number: $("#cardNo").val(),
+                phone_number: $("#nonRegisterUserMobilePhone").val(),
+            };
+            $.ajax({
+                url: '/search_order', // 后端接口地址
+                type: 'POST', // 请求类型为POST
+                data: JSON.stringify(formData), // 将表单数据转换为JSON字符串
+                contentType: 'application/json',
+                success: function (response) {
+                    alert(response.message);
+                    if (response.status === "success") {
+                        window.location.href = response.redirect_url;
+                    }
+                },
+                error: function (xhr, status, error) {
+                    // 请求失败，处理错误
+                    console.error('Error:', error);
+                    alert('Query failed!');
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

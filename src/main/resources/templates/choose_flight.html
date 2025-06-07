@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>航班信息</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+        #flight-results {
+            width: 90%;
+            max-width: 600px;
+            margin: 20px;
+        }
+        .ticket {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+        .flight-header {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .flight-details {
+            margin: 10px 0;
+            line-height: 1.5;
+            font-size: 0.9em;
+        }
+        .divider {
+            margin: 20px 0;
+            border-top: 1px dashed #ccc;
+        }
+        .select-flight {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+        .select-flight label {
+            margin-left: 5px;
+            font-size: 0.9em;
+        }
+        #submit-selection {
+            background-color: #007BFF;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        #submit-selection:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div id="flight-results"></div>
+    <button id="submit-selection">提交选择</button>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const flights_info = JSON.parse(localStorage.getItem('flights_info')) || [
+                {
+                    flightCode: "CA123",
+                    startPlace: "北京",
+                    startTime: "10:00",
+                    endPlace: "上海",
+                    endTime: "12:00",
+                    periodTime: "2小时",
+                    airline: "中国国际航空",
+                    planeType: "Boeing 737"
+                },
+                {
+                    flightCode: "MU456",
+                    startPlace: "广州",
+                    startTime: "14:00",
+                    endPlace: "成都",
+                    endTime: "16:30",
+                    periodTime: "2小时30分钟",
+                    airline: "东方航空",
+                    planeType: "Airbus A320"
+                }
+            ];
+
+            const resultsDiv = document.getElementById('flight-results');
+            const submitButton = document.getElementById('submit-selection');
+
+            if (flights_info) {
+                flights_info.forEach((flight, index) => {
+                    const flightDiv = document.createElement('div');
+                    flightDiv.className = 'ticket';
+                    flightDiv.innerHTML = `
+                        <div class="flight-header">航班号: ${flight.flightCode}</div>
+                        <div class="flight-details">
+                            <p><span>出发地:</span> ${flight.startPlace}</p>
+                            <p><span>出发时间:</span> ${flight.startTime}</p>
+                            <p><span>目的地:</span> ${flight.endPlace}</p>
+                            <p><span>到达时间:</span> ${flight.endTime}</p>
+                            <p><span>飞行时间:</span> ${flight.periodTime}</p>
+                            <p><span>航空公司:</span> ${flight.airline}</p>
+                            <p><span>飞机型号:</span> ${flight.planeType}</p>
+                        </div>
+                        <div class="select-flight">
+                            <a href = "/book_flight?flight_id=${ flight.flightCode }">
+                               <button>Book Flight</button>
+                            </a>
+                        </div>
+                    `;
+                    resultsDiv.appendChild(flightDiv);
+                });
+
+                // 点击提交按钮，传递选中航班到下个页面
+                submitButton.addEventListener('click', () => {
+                    const selectedFlights = [];
+                    document.querySelectorAll('input[type="checkbox"]:checked').forEach(checkbox => {
+                        selectedFlights.push(JSON.parse(checkbox.dataset.flight));
+                    });
+
+                    if (selectedFlights.length > 0) {
+                        localStorage.setItem('selected_flights', JSON.stringify(selectedFlights));
+                        window.location.href = 'next_page.html'; // 跳转到下一个页面
+                    } else {
+                        alert('请至少选择一个航班');
+                    }
+                });
+            } else {
+                alert('未找到航班信息');
+            }
+        });
+    </script>
+</body>
+</html>

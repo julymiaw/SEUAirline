@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>支付详情</title>
+    <style>
+        body {
+            font-family: "Trebuchet MS", sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9; /* 灰色背景 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            font-size: 18px; /* 将默认字体大小调整为 18px */
+        }
+
+        .hd {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #ffffff; /* 白色背景 */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 0 20px;
+            height: 5vh;
+            width: 100%;
+            position: fixed;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #555555; /* 灰色文本 */
+            font-size: 16px;
+            margin: 0 10px;
+            padding: 10px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .nav-links a:hover {
+            background-color: #f4f4f4; /* 灰色背景 */
+            color: #ff0000; /* 红色文本 */
+        }
+
+        .company-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: darkgreen;
+        }
+
+        .payment-container {
+            background-color: #ffffff; /* 白色背景 */
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #ff0000; /* 红色标题 */
+            margin-bottom: 20px;
+        }
+
+        p {
+            margin: 10px 0;
+            color: #555555; /* 灰色文本 */
+        }
+
+        form {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #d8000f; /* 红色按钮 */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 20px; /* 调整按钮字体大小 */
+            text-align: center; /* 文字居中 */
+        }
+
+        button:hover {
+            background-color: #ba000d; /* 悬停时的红色按钮 */
+        }
+    </style>
+</head>
+<body>
+    <div class="hd">
+        <div class="nav-links">
+            <a href="/homepage">首页</a>
+            <a href="/dashboard">用户主页</a>
+            <a href="/">登录页面</a>
+            <a href="/logout">登出</a>
+        </div>
+        <div class="company-name">东南航空</div>
+    </div>
+    <div class="payment-container">
+        <h1>支付详情</h1>
+        <p>客户姓名: {{ cname }}</p>
+        <p>客户电话: {{ cphone }}</p>
+        <p>原金额: {{ original_amount }}</p>
+        <p>折扣: {{ discount }}%</p>
+        <p>折扣后金额: {{ discounted_amount }}</p>
+        <p>账户余额: {{ account_balance }}</p>
+
+        <form action="{{ url_for('pay_order') }}" method="post">
+            <input type="hidden" name="buyerid" value="{{ buyerid }}">
+            <input type="hidden" name="orderids" value="{{ orderids }}">
+            <input type="hidden" name="discounted_amount" value="{{ discounted_amount }}">
+            <button type="submit">立即支付</button>
+        </form>
+    </div>
+</body>
+</html>

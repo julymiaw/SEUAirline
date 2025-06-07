@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>预订航班</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ffe6e6;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 20px 30px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: #cc0000;
+            text-align: center;
+        }
+
+        h3 {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: #b30000;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+            color: #800000;
+        }
+
+        input[type="checkbox"] {
+            margin-right: 10px;
+        }
+
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #cc0000;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        select:focus {
+            border-color: #ff4d4d;
+            box-shadow: 0 0 5px rgba(255, 77, 77, 0.5);
+        }
+
+        button {
+            background-color: #cc0000;
+            color: #fff;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #990000;
+        }
+
+        .passenger-list {
+            margin-bottom: 20px;
+        }
+
+        .passenger-item {
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .passenger-item:hover {
+            background-color: #ffe6e6;
+            border-radius: 5px;
+            padding: 5px;
+        }
+
+        .passenger-item input[type="checkbox"]:checked + label {
+            color: #cc0000;
+            font-weight: bold;
+        }
+
+        .error-message {
+            color: #ff1a1a;
+            font-size: 0.9rem;
+            display: none;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>预订航班</h1>
+        <form id="flightForm" method="POST" action="/book_flight">
+            <input type="hidden" name="flight_id" value="{{ flight_id }}">
+
+            <h3>选择乘客</h3>
+            <div class="passenger-list">
+                {% for passenger in passengers %}
+                    <div class="passenger-item">
+                        <input type="checkbox" name="selected_passengers" value="{{ passenger.GuestID }}" id="passenger-{{ passenger.GuestID }}">
+                        <label for="passenger-{{ passenger.GuestID }}">{{ passenger.Name }} - {{ passenger.Phone }} - {{ passenger.Email }}</label>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <label for="seat-type">座位类型：</label>
+            <select name="SeatType" id="seat-type" required>
+                <option value="">请选择座位类型</option>
+                <option value="Economy">经济舱</option>
+                <option value="Business">商务舱</option>
+            </select>
+
+            <div class="error-message" id="error-message">请至少选择一名乘客。</div>
+
+            <button type="submit">确认预订</button>
+        </form>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            // 高亮选中的乘客
+            $('.passenger-item input[type="checkbox"]').change(function () {
+                if ($(this).is(':checked')) {
+                    $(this).closest('.passenger-item').css('background-color', '#ffcccc');
+                } else {
+                    $(this).closest('.passenger-item').css('background-color', '');
+                }
+            });
+
+            // 验证表单提交
+            $('#flightForm').submit(function (event) {
+                const selectedPassengers = $('input[name="selected_passengers"]:checked').length;
+                if (selectedPassengers === 0) {
+                    $('#error-message').fadeIn();
+                    event.preventDefault();
+                } else {
+                    $('#error-message').fadeOut();
+                }
+            });
+
+            // 下拉菜单动态交互
+            $('#seat-type').hover(
+                function () {
+                    $(this).css('border-color', '#ff4d4d');
+                },
+                function () {
+                    $(this).css('border-color', '#cc0000');
+                }
+            );
+        });
+    </script>
+</body>
+</html>

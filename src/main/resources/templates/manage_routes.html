@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>管理航线</title>
+    <style>
+        body {
+            font-family: "Trebuchet MS", sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9; /* 灰色背景 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        h1 {
+            color: #ff0000; /* 红色标题 */
+            margin-bottom: 20px;
+        }
+
+        .form-container {
+            background-color: #ffffff; /* 白色背景 */
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 350px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h3 {
+            color: #555555; /* 灰色标题 */
+            margin-bottom: 10px;
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            text-align: left;
+            color: #555555; /* 灰色文本 */
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #d8000f; /* 红色按钮 */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #ba000d; /* 悬停时的红色按钮 */
+        }
+    </style>
+</head>
+<body>
+    <h1>管理航线</h1>
+    <div class="form-container">
+        <h3>添加航线</h3>
+        <form method="POST" action="/admin/insert_route">
+            <label>出发机场ID:</label>
+            <input type="text" name="DepartureAirportID" required><br>
+            <label>到达机场ID:</label>
+            <input type="text" name="ArrivalAirportID" required><br>
+            <button type="submit">添加航线</button>
+        </form>
+    </div>
+
+    <div class="form-container">
+        <h3>删除航线</h3>
+        <form method="POST" action="/admin/delete_route">
+            <label>航线ID:</label>
+            <input type="text" name="RouteID" required><br>
+            <button type="submit">删除航线</button>
+        </form>
+    </div>
+</body>
+</html>

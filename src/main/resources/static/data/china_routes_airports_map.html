@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    
+        <script>
+            L_NO_TOUCH = false;
+            L_DISABLE_3D = false;
+        </script>
+    
+    <style>html, body {width: 100%;height: 100%;margin: 0;padding: 0;}</style>
+    <style>#map {position:absolute;top:0;bottom:0;right:0;left:0;}</style>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_6bec8a56b29f0c9cc72098614ee71823 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+        
+</head>
+<body>
+    
+    
+            <div class="folium-map" id="map_6bec8a56b29f0c9cc72098614ee71823" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_6bec8a56b29f0c9cc72098614ee71823 = L.map(
+                "map_6bec8a56b29f0c9cc72098614ee71823",
+                {
+                    center: [35.8617, 104.1954],
+                    crs: L.CRS.EPSG3857,
+                    zoom: 5,
+                    zoomControl: true,
+                    preferCanvas: false,
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_6a8ae67304c24fdef8e9860ef4ade0c7 = L.tileLayer(
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {"attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors", "detectRetina": false, "maxNativeZoom": 19, "maxZoom": 19, "minZoom": 0, "noWrap": false, "opacity": 1, "subdomains": "abc", "tms": false}
+            );
+        
+    
+            tile_layer_6a8ae67304c24fdef8e9860ef4ade0c7.addTo(map_6bec8a56b29f0c9cc72098614ee71823);
+        
+    
+            var poly_line_7109572c273757cbcbe929dbfeb546e1 = L.polyline(
+                [[40.0801, 116.5846], [31.1434, 121.8054]],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "blue", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 3}
+            ).addTo(map_6bec8a56b29f0c9cc72098614ee71823);
+        
+    
+            var marker_f78152291df788d2ff946a0646e93b67 = L.marker(
+                [40.0801, 116.5846],
+                {}
+            ).addTo(map_6bec8a56b29f0c9cc72098614ee71823);
+        
+    
+            var icon_ea8dcf48bbfb34d74acef820ce1d6608 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "plane-departure", "iconColor": "white", "markerColor": "green", "prefix": "fa"}
+            );
+            marker_f78152291df788d2ff946a0646e93b67.setIcon(icon_ea8dcf48bbfb34d74acef820ce1d6608);
+        
+    
+            marker_f78152291df788d2ff946a0646e93b67.bindTooltip(
+                `<div>
+                     北京首都国际机场
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_a36f7c086ecdfc31c9cc1bfcdc572b71 = L.marker(
+                [31.1434, 121.8054],
+                {}
+            ).addTo(map_6bec8a56b29f0c9cc72098614ee71823);
+        
+    
+            var icon_8e7b97c5d02cf602c249099e8a7d4256 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "plane-arrival", "iconColor": "white", "markerColor": "red", "prefix": "fa"}
+            );
+            marker_a36f7c086ecdfc31c9cc1bfcdc572b71.setIcon(icon_8e7b97c5d02cf602c249099e8a7d4256);
+        
+    
+            marker_a36f7c086ecdfc31c9cc1bfcdc572b71.bindTooltip(
+                `<div>
+                     上海浦东国际机场
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var poly_line_b80be86318f351a2f8a9245f4b48e3de = L.polyline(
+                [[23.3924, 113.299], [30.5785, 103.9471]],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "blue", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 3}
+            ).addTo(map_6bec8a56b29f0c9cc72098614ee71823);
+        
+    
+            var marker_689b24b63a14d7b055ea9362d4f1f935 = L.marker(
+                [23.3924, 113.299],
+                {}
+            ).addTo(map_6bec8a56b29f0c9cc72098614ee71823);
+        
+    
+            var icon_ae90cebe08aa7f1eb62136a3c89aee78 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "plane-departure", "iconColor": "white", "markerColor": "green", "prefix": "fa"}
+            );
+            marker_689b24b63a14d7b055ea9362d4f1f935.setIcon(icon_ae90cebe08aa7f1eb62136a3c89aee78);
+        
+    
+            marker_689b24b63a14d7b055ea9362d4f1f935.bindTooltip(
+                `<div>
+                     广州白云国际机场
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_a7463c874aeaa77c9893782816b87e99 = L.marker(
+                [30.5785, 103.9471],
+                {}
+            ).addTo(map_6bec8a56b29f0c9cc72098614ee71823);
+        
+    
+            var icon_2b3cf1dbe50be9c65ed9e455dcd2b999 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "plane-arrival", "iconColor": "white", "markerColor": "red", "prefix": "fa"}
+            );
+            marker_a7463c874aeaa77c9893782816b87e99.setIcon(icon_2b3cf1dbe50be9c65ed9e455dcd2b999);
+        
+    
+            marker_a7463c874aeaa77c9893782816b87e99.bindTooltip(
+                `<div>
+                     成都双流国际机场
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var poly_line_5d489b5e01e49395b859a563decc9236 = L.polyline(
+                [[22.6366, 113.8108], [30.2295, 120.4342]],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "blue", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 3}
+            ).addTo(map_6bec8a56b29f0c9cc72098614ee71823);
+        
+    
+            var marker_c9b584fbb7222e7cc433de4232166bd3 = L.marker(
+                [22.6366, 113.8108],
+                {}
+            ).addTo(map_6bec8a56b29f0c9cc72098614ee71823);
+        
+    
+            var icon_83ab8e4092123b43ad5573ae99599bdb = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "plane-departure", "iconColor": "white", "markerColor": "green", "prefix": "fa"}
+            );
+            marker_c9b584fbb7222e7cc433de4232166bd3.setIcon(icon_83ab8e4092123b43ad5573ae99599bdb);
+        
+    
+            marker_c9b584fbb7222e7cc433de4232166bd3.bindTooltip(
+                `<div>
+                     深圳宝安国际机场
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_cc538a1bfe971a6b1d3868ceb92c38d1 = L.marker(
+                [30.2295, 120.4342],
+                {}
+            ).addTo(map_6bec8a56b29f0c9cc72098614ee71823);
+        
+    
+            var icon_8f0c33eb6ef44c79000516c7e77267d4 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "plane-arrival", "iconColor": "white", "markerColor": "red", "prefix": "fa"}
+            );
+            marker_cc538a1bfe971a6b1d3868ceb92c38d1.setIcon(icon_8f0c33eb6ef44c79000516c7e77267d4);
+        
+    
+            marker_cc538a1bfe971a6b1d3868ceb92c38d1.bindTooltip(
+                `<div>
+                     杭州萧山国际机场
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var poly_line_a8cef0ff7d11368166cef3be212892d5 = L.polyline(
+                [[34.4471, 108.7516], [29.7196, 106.6417]],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "blue", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 3}
+            ).addTo(map_6bec8a56b29f0c9cc72098614ee71823);
+        
+    
+            var marker_bbaeed30d2c09cd03b07c60360b317e2 = L.marker(
+                [34.4471, 108.7516],
+                {}
+            ).addTo(map_6bec8a56b29f0c9cc72098614ee71823);
+        
+    
+            var icon_12f31b2a111466f9cee97b47a4d0b426 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "plane-departure", "iconColor": "white", "markerColor": "green", "prefix": "fa"}
+            );
+            marker_bbaeed30d2c09cd03b07c60360b317e2.setIcon(icon_12f31b2a111466f9cee97b47a4d0b426);
+        
+    
+            marker_bbaeed30d2c09cd03b07c60360b317e2.bindTooltip(
+                `<div>
+                     西安咸阳国际机场
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_89b82c570575949bcfb604a0263971f5 = L.marker(
+                [29.7196, 106.6417],
+                {}
+            ).addTo(map_6bec8a56b29f0c9cc72098614ee71823);
+        
+    
+            var icon_93ca676aefefc614863dc26ba4582d98 = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "plane-arrival", "iconColor": "white", "markerColor": "red", "prefix": "fa"}
+            );
+            marker_89b82c570575949bcfb604a0263971f5.setIcon(icon_93ca676aefefc614863dc26ba4582d98);
+        
+    
+            marker_89b82c570575949bcfb604a0263971f5.bindTooltip(
+                `<div>
+                     重庆江北国际机场
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var poly_line_287a0031c6f90c153b53d144b74d5602 = L.polyline(
+                [[25.1019, 102.9292], [31.7423, 118.862]],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "blue", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 3}
+            ).addTo(map_6bec8a56b29f0c9cc72098614ee71823);
+        
+    
+            var marker_d65800bba2e830dd970b13884c230c30 = L.marker(
+                [25.1019, 102.9292],
+                {}
+            ).addTo(map_6bec8a56b29f0c9cc72098614ee71823);
+        
+    
+            var icon_f2a8ee33ef742438575e20df5169d65b = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "plane-departure", "iconColor": "white", "markerColor": "green", "prefix": "fa"}
+            );
+            marker_d65800bba2e830dd970b13884c230c30.setIcon(icon_f2a8ee33ef742438575e20df5169d65b);
+        
+    
+            marker_d65800bba2e830dd970b13884c230c30.bindTooltip(
+                `<div>
+                     昆明长水国际机场
+                 </div>`,
+                {"sticky": true}
+            );
+        
+    
+            var marker_2c623ff120a0750659ce4c88fa0fc95a = L.marker(
+                [31.7423, 118.862],
+                {}
+            ).addTo(map_6bec8a56b29f0c9cc72098614ee71823);
+        
+    
+            var icon_c870f037006c74c6b5e895c97ab0816f = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "plane-arrival", "iconColor": "white", "markerColor": "red", "prefix": "fa"}
+            );
+            marker_2c623ff120a0750659ce4c88fa0fc95a.setIcon(icon_c870f037006c74c6b5e895c97ab0816f);
+        
+    
+            marker_2c623ff120a0750659ce4c88fa0fc95a.bindTooltip(
+                `<div>
+                     南京禄口国际机场
+                 </div>`,
+                {"sticky": true}
+            );
+        
+</script>
+</html>

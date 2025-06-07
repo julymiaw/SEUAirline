@@ -1,0 +1,303 @@
+#city_fields {
+    position: absolute;
+    top: 39px;
+    left: -17px;
+    z-index: 9999
+}
+
+#city_fields_depart {
+    left: 538px;
+    position: absolute;
+    top: 215px;
+    width: 332px;
+    z-index: 70
+}
+
+#city_fields_dest {
+    left: 537px;
+    position: absolute;
+    width: 332px;
+    z-index: 60
+}
+
+.select_results {
+    background-color: #fff;
+    border: 1px solid #dbdbdb;
+    font-family: microsoft yahei, simsun, sans-serif;
+    font-size: 14px;
+    left: 17px;
+    overflow: hidden;
+    position: absolute;
+    top: 5px;
+    width: 528px
+}
+
+.select_results ul {
+    list-style: none outside none;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    float: left
+}
+
+.select_results_iframe {
+    overflow: hidden;
+    position: absolute
+}
+
+.select_results iframe {
+    overflow: hidden;
+    position: absolute;
+    z-index: 1
+}
+
+.select_results .list {
+    float: left;
+    overflow-x: hidden;
+    overflow-y: auto;
+    width: 100%
+}
+
+.select_results .select_over {
+    background-color: #f2f2f2;
+    color: #333
+}
+
+.select_results .select {
+    background: none repeat scroll 0 0 #edf5ff;
+    color: #666;
+    font-size: 12px;
+    height: 23px;
+    line-height: 23px;
+    margin-bottom: 5px;
+    padding: 0 5px
+}
+
+.select_results .tips {
+    background: none repeat scroll 0 0 #fff;
+    color: #bababa;
+    height: 40px;
+    line-height: 40px;
+    position: relative;
+    text-indent: 10px
+}
+
+.select_results .tips span {
+    position: absolute;
+    right: 2px;
+    top: 5px;
+    background: url(images/s.png) no-repeat left top;
+    width: 20px;
+    height: 20px;
+    cursor: pointer
+}
+
+.select_results .type ul {
+    margin: 0;
+    padding: 0
+}
+
+.select_results .type li {
+    width: 50%;
+    color: #767676;
+    font-size: 14px;
+    float: left;
+    height: 36px;
+    line-height: 36px;
+    text-align: center;
+    background-color: #dbdbdb;
+    cursor: pointer
+}
+
+.select_results .type li.active {
+    color: #fff;
+    background-color: #d7000f
+}
+
+.select_results .hotCity {
+    border: medium none;
+    float: left;
+    width: 100%
+}
+
+.select_results .hotCity .city {
+    display: none;
+    float: left;
+    margin: 12px 0;
+    padding-left: 20px;
+    font-size: 14px
+}
+
+.select_results .hotCity .city li {
+    display: inline;
+    float: left;
+    line-height: 24px;
+    padding: 2px;
+    width: 122px;
+    cursor: pointer
+}
+
+.select_results .hotCity .city li:hover {
+    background-color: #d7000f;
+    color: #fff
+}
+
+.select_results .hotCity .city li.hover {
+    background-color: #d7000f;
+    color: #fff
+}
+
+.select_results .hotCity .title {
+    float: left;
+    margin-top: 5px;
+    position: relative;
+    width: 100%
+}
+
+.select_results .hotCity .city_body {
+    background-color: #fff;
+    border-top: 1px solid silver;
+    float: left;
+    margin-top: -1px;
+    position: relative;
+    width: 100%
+}
+
+.select_results .hotCity .title .col {
+    position: relative;
+    color: #333;
+    cursor: pointer;
+    display: inline;
+    float: left;
+    width: 68px;
+    margin-left: 20px;
+    height: 20px;
+    line-height: 20px;
+    text-align: center;
+    z-index: 1
+}
+
+.select_results .hotCity .title .col.active {
+    color: #d7000f;
+    border-bottom: 2px solid #d7000f
+}
+
+.autocomplete {
+    background-color: #fff;
+    border: 1px solid #dbdbdb;
+    border-bottom: 0;
+    color: #333;
+    margin: 0;
+    padding: 0 0 4px;
+    text-align: left;
+    width: 252px;
+    z-index: 1000
+}
+
+.autocomplete ul {
+    height: 326px;
+    margin: 24px 0 0
+}
+
+.autocomplete ul li {
+    background-color: #fff;
+    font-size: 14px;
+    line-height: 32px;
+    list-style-type: none;
+    margin: 0;
+    border-bottom: 1px solid #dbdbdb;
+    text-align: left
+}
+
+.autocomplete ul li span {
+    color: #666 !important;
+    float: right;
+    text-align: left
+}
+
+.autocomplete ul li:hover {
+    background-color: #f7f7f7;
+    margin: 0;
+    cursor: pointer
+}
+
+.autocomplete div {
+    float: left;
+    left: 100px;
+    position: absolute;
+    top: 363px
+}
+
+.autocomplete2 {
+    height: 360px !important
+}
+
+.autocomplete2 ul {
+    overflow-y: auto
+}
+
+.selected {
+    background: none repeat scroll 0 0 #f7f7f7
+}
+
+#paginationsDisplay {
+    float: none;
+    left: 0;
+    position: static;
+    text-align: center;
+    width: 253px;
+    word-break: break-all
+}
+
+#address_message {
+    background-color: #ccc;
+    border: medium none;
+    color: #fff;
+    display: block;
+    float: left;
+    line-height: 20px;
+    padding: 2px 0 2px 9px;
+    position: absolute;
+    top: 0;
+    width: 97%;
+    word-break: break-all;
+    word-wrap: break-word;
+    left: 0
+}
+
+#MultiSearchPanel #form-createMultiCitySearch-container .select_results {
+    background-color: #fff;
+    border: 1px solid silver;
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    left: 0;
+    overflow: hidden;
+    padding: 5px;
+    position: absolute;
+    top: 3px;
+    width: 320px
+}
+
+.hot_city_toggle {
+    color: #a1a1a1;
+    cursor: pointer;
+    font-size: 12px;
+    height: 20px;
+    line-height: 15px;
+    margin-top: -8px;
+    overflow: hidden;
+    padding-right: 25px;
+    position: absolute;
+    right: 0;
+    top: 50%;
+    z-index: 1000
+}
+
+.select_results_mobile {
+    width: 594px
+}
+
+.select_results {
+    position: static;
+    top: auto
+}

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>管理员仪表盘</title>
+    <style>
+        body {
+            font-family: "Trebuchet MS", sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9; /* 灰色背景 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        h1 {
+            color: #ff0000; /* 红色标题 */
+            margin-bottom: 20px;
+        }
+
+        nav {
+            background-color: #ffffff; /* 白色背景 */
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            text-align: center;
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        nav ul li {
+            margin-bottom: 10px;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: #555555; /* 灰色文本 */
+            font-size: 16px;
+            padding: 10px;
+            display: block;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        nav ul li a:hover {
+            background-color: #f4f4f4; /* 灰色背景 */
+            color: #ff0000; /* 红色文本 */
+        }
+    </style>
+</head>
+<body>
+    <h1>管理员仪表盘</h1>
+    <nav>
+        <ul>
+            <li><a href="/admin/manage_airports">管理机场</a></li>
+            <li><a href="/admin/manage_routes">管理航线</a></li>
+            <li><a href="/admin/manage_aircraft">管理飞机</a></li>
+            <li><a href="/admin/manage_flights">管理航班</a></li>
+        </ul>
+    </nav>
+</body>
+</html>

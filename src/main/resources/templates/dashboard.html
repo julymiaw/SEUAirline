@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+</head>
+<body>
+    <h1>Welcome, {{ user['Name'] }}!</h1>
+    <p>Customer ID: {{ user['CustomerID'] }}</p>
+    <p>Account Balance: ${{ user['AccountBalance'] }}</p>
+    <p>Membership Rank: {{ user['Rank'] }}</p>
+
+    <nav>
+        <ul>
+            <li><a href="/search_route">Search Routes</a></li>
+            <li><a href="/view_orders?customer_id={{ user['CustomerID'] }}">View Orders</a></li>
+            <li><a href="/search_flights">Book a Flight</a></li>
+            <li><a href="/logout">Logout</a></li>
+            <li><a href="/passengers">Passengers</a> </li>
+            <li><a href="/chargepage">Charge</a></li>
+        </ul>
+    </nav>
+</body>
+</html>
