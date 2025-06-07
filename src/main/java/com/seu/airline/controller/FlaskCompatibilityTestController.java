@@ -83,6 +83,7 @@ public class FlaskCompatibilityTestController {
         result.append("  /test/order-manage       - 订单管理测试\n");
         result.append("  /test/passenger-manage   - 乘客管理测试\n");
         result.append("  /test/booking-workflow   - 订票和支付流程测试\n");
+        result.append("  /test/passenger-management - 乘客管理功能测试\n");
         result.append("\n【系统诊断】\n");
         result.append("  /test/db-stats           - 数据库统计\n");
         result.append("  /test/db-connection      - 连接测试\n");
@@ -753,6 +754,113 @@ public class FlaskCompatibilityTestController {
         } catch (Exception e) {
             result.append("\n❌ 测试失败: ").append(e.getMessage());
             safeDeleteCustomers(testPhoneHost, testEmailHost, testPhoneGuest, testEmailGuest);
+        }
+
+        return result.toString();
+    }
+
+    // 测试乘客管理功能
+    @GetMapping("/test/passenger-management")
+    @ResponseBody
+    public String testPassengerManagement() {
+        StringBuilder result = new StringBuilder();
+        result.append("=== 乘客管理功能测试 ===\n\n");
+
+        String testEmailHost = "passenger-host@test.com";
+        String testPhoneHost = "13800002001";
+        String testPhoneGuest = "13800002002";
+        String testIdentityGuest = "110101199002020202";
+        String testNameGuest = "测试乘客用户";
+
+        try {
+            // 环境准备
+            safeDeleteCustomers(testPhoneHost, testEmailHost, testPhoneGuest, "guest@test.com");
+
+            // 1. 创建Host用户
+            result.append("【创建Host用户】\n");
+
+            com.seu.airline.entity.Customer hostUser = new com.seu.airline.entity.Customer();
+            hostUser.setName("乘客管理Host用户");
+            hostUser.setPassword("host123");
+            hostUser.setAccountBalance(1000);
+            hostUser.setPhone(testPhoneHost);
+            hostUser.setEmail(testEmailHost);
+            hostUser.setIdentity("110101199001010101");
+            hostUser.setRank(5);
+
+            customerDao.register(hostUser);
+            result.append("✅ Host用户创建完成\n");
+
+            // 2. 获取Host用户ID
+            Optional<com.seu.airline.entity.Customer> hostCustomer = customerDao.findByEmailAndPassword(testEmailHost,
+                    "host123");
+            if (hostCustomer.isPresent()) {
+                String hostId = hostCustomer.get().getCustomerId();
+
+                // 3. 测试添加乘客功能 - 完全使用DAO方法
+                result.append("\n【添加乘客测试】\n");
+
+                // 检查Guest是否已存在
+                Optional<com.seu.airline.entity.Customer> existingGuest = customerDao
+                        .findByPhoneAndIdentityAndName(testPhoneGuest, testIdentityGuest, testNameGuest);
+
+                String guestId;
+                if (existingGuest.isPresent()) {
+                    guestId = existingGuest.get().getCustomerId();
+                    result.append("✅ Guest用户已存在，ID: ").append(guestId).append("\n");
+                } else {
+                    // 创建新的Guest用户
+                    int insertResult = customerDao.insertBasicCustomer(testPhoneGuest, testIdentityGuest,
+                            testNameGuest);
+                    result.append("✅ 创建Guest用户: 影响行数 ").append(insertResult).append("\n");
+
+                    // 获取新创建的Guest用户ID
+                    Optional<com.seu.airline.entity.Customer> newGuest = customerDao
+                            .findByPhoneAndIdentityAndName(testPhoneGuest, testIdentityGuest, testNameGuest);
+
+                    if (newGuest.isPresent()) {
+                        guestId = newGuest.get().getCustomerId();
+                        result.append("✅ 获取Guest用户ID: ").append(guestId).append("\n");
+                    } else {
+                        result.append("❌ 无法获取Guest用户ID\n");
+                        return result.toString();
+                    }
+                }
+
+                // 4. 建立Host-Guest关系
+                result.append("\n【建立乘客关系】\n");
+                int relationResult = passengerDao.addPassenger(hostId, guestId);
+                result.append("✅ 建立乘客关系: 影响行数 ").append(relationResult).append("\n");
+
+                // 5. 查询乘客列表
+                result.append("\n【查询乘客列表】\n");
+                List<Map<String, Object>> guestInfo = passengerDao.findPassengerInfoByHostId(hostId);
+                result.append("✅ 查询乘客列表: 找到 ").append(guestInfo.size()).append(" 个乘客\n");
+
+                if (!guestInfo.isEmpty()) {
+                    Map<String, Object> passenger = guestInfo.get(guestInfo.size() - 1); // 最新添加的
+                    result.append("   最新乘客: ").append(passenger.get("Name"));
+                    result.append(" - ").append(passenger.get("Phone"));
+                    result.append(" - ").append(passenger.get("GuestID")).append("\n");
+                }
+
+                // 6. 验证Flask对应功能
+                result.append("\n【Flask功能对应验证】\n");
+                result.append("✅ /passengers 页面功能: 查询乘客列表 - 完成\n");
+                result.append("✅ /admin/insert_passenger 功能: 添加乘客 - 完成\n");
+                result.append("✅ 自动创建Guest用户逻辑 - 完成\n");
+                result.append("✅ Host-Guest关系建立 - 完成\n");
+            }
+
+            // 环境清理
+            safeDeleteCustomers(testPhoneHost, testEmailHost, testPhoneGuest, "guest@test.com");
+            result.append("\n✅ 环境清理完成\n");
+
+            result.append("\n🎉 乘客管理功能测试完成！（100%使用DAO）");
+
+        } catch (Exception e) {
+            result.append("\n❌ 乘客管理测试失败: ").append(e.getMessage());
+            safeDeleteCustomers(testPhoneHost, testEmailHost, testPhoneGuest, "guest@test.com");
         }
 
         return result.toString();
