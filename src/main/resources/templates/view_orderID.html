@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="zh-cn">
+<html lang="zh-cn" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
     <title>查看订单</title>
@@ -7,8 +8,8 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f8f9fa; /* 浅灰背景 */
-            color: #333333; /* 深灰文本 */
+            background-color: #f8f9fa;
+            color: #333333;
             font-size: 16px;
             margin: 0;
             padding: 0;
@@ -18,7 +19,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background-color: #ffffff; /* 白色背景 */
+            background-color: #ffffff;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             padding: 0 20px;
             height: 5vh;
@@ -31,7 +32,7 @@
 
         .nav-links a {
             text-decoration: none;
-            color: #555555; /* 灰色文本 */
+            color: #555555;
             font-size: 16px;
             margin: 0 10px;
             padding: 10px;
@@ -39,8 +40,8 @@
         }
 
         .nav-links a:hover {
-            background-color: #f4f4f4; /* 灰色背景 */
-            color: #ff0000; /* 红色文本 */
+            background-color: #f4f4f4;
+            color: #ff0000;
         }
 
         .company-name {
@@ -51,7 +52,7 @@
 
         h1 {
             text-align: center;
-            color: #d9534f; /* 红色标题 */
+            color: #d9534f;
             margin-top: 20px;
         }
 
@@ -71,29 +72,30 @@
             table-layout: fixed;
         }
 
-        th, td {
-            border: 1px solid #ddd; /* 灰色边框 */
+        th,
+        td {
+            border: 1px solid #ddd;
             padding: 12px;
             text-align: center;
             word-wrap: break-word;
         }
 
         th {
-            background-color: #f4f4f4; /* 灰色表头 */
-            color: #555555; /* 深灰文本 */
+            background-color: #f4f4f4;
+            color: #555555;
         }
 
         tr:nth-child(even) {
-            background-color: #f9f9f9; /* 白色背景 */
+            background-color: #f9f9f9;
         }
 
         tr:hover {
-            background-color: #f1f1f1; /* 悬停时浅灰背景 */
+            background-color: #f1f1f1;
         }
 
         .btn-red {
             display: inline-block;
-            background-color: #d9534f; /* 红色按钮背景 */
+            background-color: #d9534f;
             color: #ffffff;
             padding: 10px 20px;
             border: none;
@@ -105,7 +107,7 @@
         }
 
         .btn-red:hover {
-            background-color: #c9302c; /* 深红色背景 */
+            background-color: #c9302c;
         }
 
         .no-data {
@@ -115,6 +117,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="hd">
         <div class="nav-links">
@@ -127,45 +130,46 @@
     </div>
     <h1>您的订单</h1>
     <div class="container">
-        {% if order %}
-        <table id="orders-table">
-            <thead>
-                <tr>
-                    <th>订单ID</th>
-                    <th>用户ID</th>
-                    <th>购买人ID</th>
-                    <th>航班ID</th>
-                    <th>座位类型</th>
-                    <th>状态</th>
-                    <th>订单时间</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>{{ order.OrderID }}</td>
-                    <td>{{ order.CustomerID }}</td>
-                    <td>{{ order.BuyerID }}</td>
-                    <td>{{ order.FlightID }}</td>
-                    <td>{{ order.SeatType }}</td>
-                    <td>{{ order.OrderStatus }}</td>
-                    <td>{{ order.OrderTime }}</td>
-                </tr>
-            </tbody>
-        </table>
-        {% else %}
-        <p class="no-data">未找到订单信息。</p>
-        {% endif %}
+        <!-- 🔧 修复：使用Thymeleaf语法替代Jinja2 -->
+        <div th:if="${order}">
+            <table id="orders-table">
+                <thead>
+                    <tr>
+                        <th>订单ID</th>
+                        <th>用户ID</th>
+                        <th>购买人ID</th>
+                        <th>航班ID</th>
+                        <th>座位类型</th>
+                        <th>状态</th>
+                        <th>订单时间</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td th:text="${order.orderId}"></td>
+                        <td th:text="${order.customerId}"></td>
+                        <td th:text="${order.buyerId}"></td>
+                        <td th:text="${order.flightId}"></td>
+                        <td th:text="${order.seatType}"></td>
+                        <td th:text="${order.orderStatus}"></td>
+                        <td th:text="${order.orderTime}"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div th:unless="${order}">
+            <p class="no-data">未找到订单信息。</p>
+        </div>
 
         <div style="text-align: center; margin-top: 20px;">
             <a href="/homepage" class="btn-red">返回查询</a>
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
-        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
     <script>
-        $(document).ready(function() {
+        $(document).ready(function () {
             $('#orders-table').DataTable({
                 language: {
                     search: "搜索:",
@@ -187,4 +191,5 @@
         });
     </script>
 </body>
+
 </html>

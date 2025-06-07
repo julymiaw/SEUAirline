@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
     <title>支付详情</title>
@@ -8,20 +9,20 @@
             font-family: "Trebuchet MS", sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f9f9f9; /* 灰色背景 */
+            background-color: #f9f9f9;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 100vh;
-            font-size: 18px; /* 将默认字体大小调整为 18px */
+            font-size: 18px;
         }
 
         .hd {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background-color: #ffffff; /* 白色背景 */
+            background-color: #ffffff;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             padding: 0 20px;
             height: 5vh;
@@ -38,7 +39,7 @@
 
         .nav-links a {
             text-decoration: none;
-            color: #555555; /* 灰色文本 */
+            color: #555555;
             font-size: 16px;
             margin: 0 10px;
             padding: 10px;
@@ -46,8 +47,8 @@
         }
 
         .nav-links a:hover {
-            background-color: #f4f4f4; /* 灰色背景 */
-            color: #ff0000; /* 红色文本 */
+            background-color: #f4f4f4;
+            color: #ff0000;
         }
 
         .company-name {
@@ -57,7 +58,7 @@
         }
 
         .payment-container {
-            background-color: #ffffff; /* 白色背景 */
+            background-color: #ffffff;
             padding: 20px;
             border-radius: 5px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -67,13 +68,13 @@
         }
 
         h1 {
-            color: #ff0000; /* 红色标题 */
+            color: #ff0000;
             margin-bottom: 20px;
         }
 
         p {
             margin: 10px 0;
-            color: #555555; /* 灰色文本 */
+            color: #555555;
         }
 
         form {
@@ -86,20 +87,21 @@
             display: block;
             width: 100%;
             padding: 10px;
-            background-color: #d8000f; /* 红色按钮 */
+            background-color: #d8000f;
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 20px; /* 调整按钮字体大小 */
-            text-align: center; /* 文字居中 */
+            font-size: 20px;
+            text-align: center;
         }
 
         button:hover {
-            background-color: #ba000d; /* 悬停时的红色按钮 */
+            background-color: #ba000d;
         }
     </style>
 </head>
+
 <body>
     <div class="hd">
         <div class="nav-links">
@@ -112,19 +114,21 @@
     </div>
     <div class="payment-container">
         <h1>支付详情</h1>
-        <p>客户姓名: {{ cname }}</p>
-        <p>客户电话: {{ cphone }}</p>
-        <p>原金额: {{ original_amount }}</p>
-        <p>折扣: {{ discount }}%</p>
-        <p>折扣后金额: {{ discounted_amount }}</p>
-        <p>账户余额: {{ account_balance }}</p>
+        <!-- 🔧 修复：使用Thymeleaf语法替代Jinja2 -->
+        <p>客户姓名: <span th:text="${cname}"></span></p>
+        <p>客户电话: <span th:text="${cphone}"></span></p>
+        <p>原金额: <span th:text="${original_amount}"></span></p>
+        <p>折扣: <span th:text="${discount}"></span>%</p>
+        <p>折扣后金额: <span th:text="${discounted_amount}"></span></p>
+        <p>账户余额: <span th:text="${account_balance}"></span></p>
 
-        <form action="{{ url_for('pay_order') }}" method="post">
-            <input type="hidden" name="buyerid" value="{{ buyerid }}">
-            <input type="hidden" name="orderids" value="{{ orderids }}">
-            <input type="hidden" name="discounted_amount" value="{{ discounted_amount }}">
+        <form action="/pay_order" method="post">
+            <input type="hidden" name="buyerid" th:value="${buyerid}">
+            <input type="hidden" name="orderids" th:value="${orderids}">
+            <input type="hidden" name="discounted_amount" th:value="${discounted_amount}">
             <button type="submit">立即支付</button>
         </form>
     </div>
 </body>
+
 </html>

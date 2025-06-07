@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="zh-cn">
+<html lang="zh-cn" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
     <title>查看订单</title>
@@ -7,8 +8,8 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #ffffff; /* 白色背景 */
-            color: #555555; /* 灰色文本 */
+            background-color: #ffffff;
+            color: #555555;
             font-size: 16px;
             margin: 0;
             padding: 0;
@@ -18,7 +19,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background-color: #ffffff; /* 白色背景 */
+            background-color: #ffffff;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             padding: 0 20px;
             height: 5vh;
@@ -31,7 +32,7 @@
 
         .nav-links a {
             text-decoration: none;
-            color: #555555; /* 灰色文本 */
+            color: #555555;
             font-size: 16px;
             margin: 0 10px;
             padding: 10px;
@@ -39,8 +40,8 @@
         }
 
         .nav-links a:hover {
-            background-color: #f4f4f4; /* 灰色背景 */
-            color: #ff0000; /* 红色文本 */
+            background-color: #f4f4f4;
+            color: #ff0000;
         }
 
         .company-name {
@@ -51,7 +52,7 @@
 
         h1 {
             text-align: center;
-            color: #ff0000; /* 红色标题 */
+            color: #ff0000;
             margin-top: 20px;
         }
 
@@ -62,27 +63,29 @@
             table-layout: fixed;
         }
 
-        th, td {
-            border: 1px solid #ddd; /* 灰色边框 */
+        th,
+        td {
+            border: 1px solid #ddd;
             padding: 10px;
             text-align: left;
             word-wrap: break-word;
         }
 
         th {
-            background-color: #f4f4f4; /* 灰色表头 */
-            color: #555555; /* 灰色文本 */
+            background-color: #f4f4f4;
+            color: #555555;
         }
 
         tr:nth-child(even) {
-            background-color: #f9f9f9; /* 白色背景 */
+            background-color: #f9f9f9;
         }
 
         tr:hover {
-            background-color: #e9e9e9; /* 悬停时的灰色背景 */
+            background-color: #e9e9e9;
         }
     </style>
 </head>
+
 <body>
     <div class="hd">
         <div class="nav-links">
@@ -105,23 +108,21 @@
             </tr>
         </thead>
         <tbody>
-            {% for order in orders %}
-            <tr>
-                <td>{{ order.OrderID }}</td>
-                <td>{{ order.FlightID }}</td>
-                <td>{{ order.SeatType }}</td>
-                <td>{{ order.OrderStatus }}</td>
-                <td>{{ order.OrderTime }}</td>
+            <!-- 🔧 修复：使用Thymeleaf语法替代Jinja2 -->
+            <tr th:each="order : ${orders}">
+                <td th:text="${order.orderId}"></td>
+                <td th:text="${order.flightId}"></td>
+                <td th:text="${order.seatType}"></td>
+                <td th:text="${order.orderStatus}"></td>
+                <td th:text="${order.orderTime}"></td>
             </tr>
-            {% endfor %}
         </tbody>
     </table>
 
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
-        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
     <script>
-        $(document).ready(function() {
+        $(document).ready(function () {
             $('#orders-table').DataTable({
                 language: {
                     search: "搜索:",
@@ -143,4 +144,5 @@
         });
     </script>
 </body>
+
 </html>

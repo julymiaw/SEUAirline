@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -95,7 +96,7 @@
             padding: 5px;
         }
 
-        .passenger-item input[type="checkbox"]:checked + label {
+        .passenger-item input[type="checkbox"]:checked+label {
             color: #cc0000;
             font-weight: bold;
         }
@@ -108,20 +109,22 @@
     </style>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
+
 <body>
     <div class="container">
         <h1>预订航班</h1>
         <form id="flightForm" method="POST" action="/book_flight">
-            <input type="hidden" name="flight_id" value="{{ flight_id }}">
+            <input type="hidden" name="flight_id" th:value="${flight_id}">
 
             <h3>选择乘客</h3>
             <div class="passenger-list">
-                {% for passenger in passengers %}
-                    <div class="passenger-item">
-                        <input type="checkbox" name="selected_passengers" value="{{ passenger.GuestID }}" id="passenger-{{ passenger.GuestID }}">
-                        <label for="passenger-{{ passenger.GuestID }}">{{ passenger.Name }} - {{ passenger.Phone }} - {{ passenger.Email }}</label>
-                    </div>
-                {% endfor %}
+                <!-- 🔧 修复：使用Thymeleaf语法替代Jinja2 -->
+                <div class="passenger-item" th:each="passenger : ${passengers}">
+                    <input type="checkbox" name="selected_passengers" th:value="${passenger.GuestID}"
+                        th:id="'passenger-' + ${passenger.GuestID}">
+                    <label th:for="'passenger-' + ${passenger.GuestID}"
+                        th:text="${passenger.Name} + ' - ' + ${passenger.Phone} + ' - ' + ${passenger.Email}"></label>
+                </div>
             </div>
 
             <label for="seat-type">座位类型：</label>
@@ -139,7 +142,6 @@
 
     <script>
         $(document).ready(function () {
-            // 高亮选中的乘客
             $('.passenger-item input[type="checkbox"]').change(function () {
                 if ($(this).is(':checked')) {
                     $(this).closest('.passenger-item').css('background-color', '#ffcccc');
@@ -148,7 +150,6 @@
                 }
             });
 
-            // 验证表单提交
             $('#flightForm').submit(function (event) {
                 const selectedPassengers = $('input[name="selected_passengers"]:checked').length;
                 if (selectedPassengers === 0) {
@@ -159,7 +160,6 @@
                 }
             });
 
-            // 下拉菜单动态交互
             $('#seat-type').hover(
                 function () {
                     $(this).css('border-color', '#ff4d4d');
@@ -171,4 +171,5 @@
         });
     </script>
 </body>
+
 </html>

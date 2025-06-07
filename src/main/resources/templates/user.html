@@ -1,20 +1,18 @@
 <!doctype html>
-<html lang="zh-cn">
+<html lang="zh-cn" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="utf-8">
     <title>用户主页</title>
     <link rel='stylesheet' href="/css/base/style.css" />
     <link rel="stylesheet" href="/css/base/main.css" />
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
-        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <style>
         body {
             font-family: "Trebuchet MS", sans-serif;
             margin: 0;
             padding: 0;
             background-color: #f9f9f9;
-            /* 灰色背景 */
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -28,7 +26,6 @@
             align-items: center;
             justify-content: space-between;
             background-color: #ffffff;
-            /* 白色背景 */
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             padding: 0 20px;
             height: 5vh;
@@ -46,7 +43,6 @@
         .nav-links a {
             text-decoration: none;
             color: #555555;
-            /* 灰色文本 */
             font-size: 16px;
             margin: 0 10px;
             padding: 10px;
@@ -55,9 +51,7 @@
 
         .nav-links a:hover {
             background-color: #f4f4f4;
-            /* 灰色背景 */
             color: #ff0000;
-            /* 红色文本 */
         }
 
         .company-name {
@@ -70,35 +64,26 @@
             width: 100%;
             height: 100%;
             background-image: url('/images/background.jpg');
-            /* 背景图像 */
             background-size: cover;
             background-position: center;
             display: flex;
-            /* 使用 Flexbox 布局 */
             justify-content: center;
-            /* 水平居中 */
             align-items: center;
-            /* 垂直居中 */
             padding: 70px 20px 20px;
-            /* 顶部留出导航栏的高度 */
         }
 
         .user-home {
             background-color: #ffffff;
-            /* 白色背景 */
             padding: 20px;
             border-radius: 5px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             max-width: 600px;
             width: 100%;
-            /* 确保在小屏幕上也能充满宽度 */
             margin: 0 auto;
-            /* 保持水平居中 */
         }
 
         .user-info {
             background-color: #f4f4f4;
-            /* 灰色背景 */
             padding: 10px;
             border-radius: 5px;
             margin-bottom: 20px;
@@ -114,13 +99,11 @@
             padding: 10px 15px;
             cursor: pointer;
             color: #555555;
-            /* 灰色文本 */
             transition: background-color 0.3s, color 0.3s;
         }
 
         .tab-li-on {
             background-color: #d8000f;
-            /* 红色背景 */
             color: white;
             border-radius: 5px;
         }
@@ -131,7 +114,6 @@
             border-radius: 5px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             background-color: #ffffff;
-            /* 白色背景 */
         }
 
         .tab-item.active {
@@ -140,15 +122,11 @@
 
         .btn-b {
             display: flex;
-            /* 使用 Flexbox 布局 */
             justify-content: center;
-            /* 水平居中 */
             align-items: center;
-            /* 垂直居中 */
             width: 100%;
             padding: 10px;
             background-color: #d8000f;
-            /* 红色按钮 */
             color: white;
             border: none;
             border-radius: 5px;
@@ -156,12 +134,10 @@
             font-size: 16px;
             margin-top: 10px;
             text-align: center;
-            /* 文字居中 */
         }
 
         .btn-b:hover {
             background-color: #ba000d;
-            /* 悬停时的红色按钮 */
         }
     </style>
 </head>
@@ -180,9 +156,10 @@
         <div class="user-home">
             <h1>欢迎，用户</h1>
             <div class="user-info">
-                <p>用户名: <span id="username">{{ user["Name"] }}</span></p>
-                <p>邮箱: <span id="email">{{ user["Email"] }}</span></p>
-                <p>账户余额：<span id="remain">{{ user['AccountBalance'] }}</span></p>
+                <!-- 🔧 修复：使用Thymeleaf语法替代Jinja2 -->
+                <p>用户名: <span id="username" th:text="${user['Name']}"></span></p>
+                <p>邮箱: <span id="email" th:text="${user['Email']}"></span></p>
+                <p>账户余额：<span id="remain" th:text="${user['AccountBalance']}"></span></p>
             </div>
 
             <ul class="tab-nav">
@@ -227,7 +204,6 @@
 
     <script>
         $(function () {
-            // Tab切换逻辑
             $(".tab-li").on("click", function () {
                 $(".tab-li").removeClass("tab-li-on");
                 $(this).addClass("tab-li-on");
@@ -235,39 +211,38 @@
                 $($(this).data("target")).show();
             });
 
-            // 充值表单提交
             $("#charge-form").on("submit", function (event) {
-                event.preventDefault(); // 阻止表单的默认提交行为
+                event.preventDefault();
 
-                const money = $("#money").val(); // 获取充值金额
+                const money = $("#money").val();
                 if (money) {
                     $.ajax({
                         url: "/charge",
                         type: "POST",
                         contentType: "application/json",
-                        data: JSON.stringify({ money: money }), // 将充值金额转换为浮点数并发送
+                        data: JSON.stringify({ money: money }),
                         success: function (response) {
-                            alert(response.message); // 显示服务器返回的消息
+                            alert(response.message);
                             if (response.status === "success") {
                                 alert("充值成功，请刷新页面");
                             }
                         },
                         error: function () {
-                            alert("充值失败，请稍后再试。"); // 显示错误消息
+                            alert("充值失败，请稍后再试。");
                         },
                     });
                 } else {
-                    alert("请输入有效的充值金额。"); // 提示用户输入有效的充值金额
+                    alert("请输入有效的充值金额。");
                 }
             });
         });
 
         function redirectToPassengerPage() {
-            window.location.href = '/passengers'; // 重定向到添加乘车人的页面
+            window.location.href = '/passengers';
         }
 
         function redirectToOrderPage() {
-            window.location.href = '/view_orders'; // 重定向到查看订单的页面
+            window.location.href = '/view_orders';
         }
     </script>
 </body>
