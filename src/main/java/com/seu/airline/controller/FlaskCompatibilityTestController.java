@@ -624,7 +624,7 @@ public class FlaskCompatibilityTestController {
     @ResponseBody
     public String testBookingWorkflow() {
         StringBuilder result = new StringBuilder();
-        result.append("=== 订票和支付流程测试 ===\n\n");
+        result.append("=== 订票流程测试（极简版，只测试实际功能）===\n\n");
 
         String testEmailHost = "booking-host@test.com";
         String testPhoneHost = "13800001001";
@@ -632,25 +632,21 @@ public class FlaskCompatibilityTestController {
         String testPhoneGuest = "13800001002";
 
         try {
-            // 🔧 安全环境准备
+            // 环境准备
             safeDeleteCustomers(testPhoneHost, testEmailHost, testPhoneGuest, testEmailGuest);
 
-            // 1. 创建测试用户（Host和Guest）
+            // 1. 创建测试用户 - 使用CustomerDao
             result.append("【创建测试用户】\n");
 
-            // 创建Host用户
             Customer hostUser = new Customer();
             hostUser.setName("订票Host用户");
             hostUser.setPassword("host123");
-            hostUser.setAccountBalance(5000); // 足够的余额
+            hostUser.setAccountBalance(5000);
             hostUser.setPhone(testPhoneHost);
             hostUser.setEmail(testEmailHost);
             hostUser.setIdentity("110101199001010101");
-            hostUser.setRank(10); // 10%折扣
+            hostUser.setRank(10);
 
-            customerDao.register(hostUser);
-
-            // 创建Guest用户
             Customer guestUser = new Customer();
             guestUser.setName("订票Guest用户");
             guestUser.setPassword("guest123");
@@ -660,10 +656,11 @@ public class FlaskCompatibilityTestController {
             guestUser.setIdentity("110101199001010102");
             guestUser.setRank(0);
 
+            customerDao.register(hostUser);
             customerDao.register(guestUser);
             result.append("✅ 测试用户创建完成\n");
 
-            // 2. 获取用户ID并建立乘客关系
+            // 2. 建立乘客关系 - 使用PassengerDao
             Optional<Customer> hostCustomer = customerDao.findByEmailAndPassword(testEmailHost, "host123");
             Optional<Customer> guestCustomer = customerDao.findByEmailAndPassword(testEmailGuest, "guest123");
 
@@ -671,87 +668,90 @@ public class FlaskCompatibilityTestController {
                 String hostId = hostCustomer.get().getCustomerId();
                 String guestId = guestCustomer.get().getCustomerId();
 
-                // 添加乘客关系
                 passengerDao.addPassenger(hostId, guestId);
                 result.append("✅ 乘客关系建立完成\n");
 
-                // 3. 测试乘客查询功能 - 对应Flask /passengers
+                // 3. 查询乘客信息 - 使用PassengerDao
                 result.append("\n【乘客查询测试】\n");
                 List<Map<String, Object>> passengerInfo = passengerDao.findPassengerInfoByHostId(hostId);
                 result.append("✅ 查询乘客信息: 找到 ").append(passengerInfo.size()).append(" 个乘客\n");
 
-                // 4. 测试订单创建功能 - 对应Flask /book_flight
+                // 4. 创建订单 - 使用OrderDao
                 result.append("\n【订单创建测试】\n");
                 List<Flight> flights = flightDao.findAll();
                 if (!flights.isEmpty()) {
                     String testFlightId = flights.get(0).getFlightId();
-                    LocalDateTime orderTime = LocalDateTime.now();
 
-                    // 创建测试订单
+                    Integer orderCountBefore = orderDao.countOrdersByCustomerAndBuyer(guestId, hostId);
+                    LocalDateTime orderTime = LocalDateTime.now();
                     int orderResult = orderDao.createOrder(guestId, hostId, testFlightId, "Economy", "Established",
                             orderTime);
                     result.append("✅ 创建订单: 影响行数 ").append(orderResult).append("\n");
 
-                    // 5. 测试订单查询功能
-                    result.append("\n【订单查询测试】\n");
-                    List<Map<String, Object>> orderIds = orderDao.findOrderIdsByCondition(guestId, hostId, orderTime);
-                    result.append("✅ 订单ID查询: 找到 ").append(orderIds.size()).append(" 个订单\n");
+                    Integer orderCountAfter = orderDao.countOrdersByCustomerAndBuyer(guestId, hostId);
+                    result.append("✅ 订单数量变化: ").append(orderCountBefore).append(" → ").append(orderCountAfter)
+                            .append("\n");
 
-                    if (!orderIds.isEmpty()) {
-                        String orderId = (String) orderIds.get(0).get("OrderID");
+                    // 5. 获取最新订单 - 使用OrderDao
+                    result.append("\n【获取最新订单】\n");
+                    List<Order> latestOrders = orderDao.findLatestOrdersByCustomers(List.of(guestId), hostId);
+                    result.append("✅ 最新订单查询: 找到 ").append(latestOrders.size()).append(" 个订单\n");
+
+                    if (!latestOrders.isEmpty()) {
+                        String orderId = latestOrders.get(0).getOrderId();
                         result.append("   订单号: ").append(orderId).append("\n");
 
-                        // 6. 测试支付流程 - 对应Flask /pay_order
+                        // 6. 支付流程 - 使用DAO组合
                         result.append("\n【支付流程测试】\n");
-                        Flight flight = flights.get(0);
-                        BigDecimal economyPrice = flight.getEconomyPrice();
 
-                        // 计算折扣价格
-                        double discount = Math.min(10 / 100.0, 0.2); // 10%折扣
-                        BigDecimal discountedAmount = economyPrice.multiply(BigDecimal.valueOf(1 - discount));
+                        Optional<Flight> flight = flightDao.findByFlightId(testFlightId);
+                        if (flight.isPresent()) {
+                            BigDecimal economyPrice = flight.get().getEconomyPrice();
+                            double discount = Math.min(10 / 100.0, 0.2);
+                            BigDecimal discountedAmount = economyPrice.multiply(BigDecimal.valueOf(1 - discount));
 
-                        result.append("   原价: ").append(economyPrice).append("\n");
-                        result.append("   折扣: ").append(discount * 100).append("%\n");
-                        result.append("   实付: ").append(discountedAmount).append("\n");
+                            result.append("   原价: ").append(economyPrice).append("\n");
+                            result.append("   折扣: ").append(discount * 100).append("%\n");
+                            result.append("   实付: ").append(discountedAmount).append("\n");
 
-                        // 更新订单状态为已支付
-                        int payResult = orderDao.updateOrderStatus(orderId, "paid");
-                        result.append("✅ 订单支付: 影响行数 ").append(payResult).append("\n");
+                            // 更新订单状态
+                            int payResult = orderDao.updateOrderStatus(orderId, "Paid");
+                            result.append("✅ 订单支付: 影响行数 ").append(payResult).append("\n");
 
-                        // 更新用户余额
-                        Integer originalBalance = hostCustomer.get().getAccountBalance();
-                        Integer newBalance = originalBalance - discountedAmount.intValue();
-                        int balanceResult = customerDao.updateAccountBalance(hostId, newBalance);
-                        result.append("✅ 余额更新: 影响行数 ").append(balanceResult).append("\n");
-                        result.append("   余额变化: ").append(originalBalance).append(" → ").append(newBalance)
-                                .append("\n");
+                            // 更新余额和等级
+                            Integer originalBalance = hostCustomer.get().getAccountBalance();
+                            Integer newBalance = originalBalance - discountedAmount.intValue();
+                            customerDao.updateAccountBalance(hostId, newBalance);
+                            customerDao.incrementRank(hostId);
+                            result.append("✅ 余额更新: ").append(originalBalance).append(" → ").append(newBalance)
+                                    .append("\n");
 
-                        // 增加用户等级
-                        int rankResult = customerDao.incrementRank(hostId);
-                        result.append("✅ 等级更新: 影响行数 ").append(rankResult).append("\n");
+                            // 7. 核心功能测试: 订单号+手机号查询
+                            result.append("\n【核心功能: 订单号+手机号查询】\n");
+                            Optional<Map<String, Object>> orderSearchResult = orderDao
+                                    .findOrderWithCustomerInfo(orderId, testPhoneGuest);
+                            result.append("✅ 订单搜索: ").append(orderSearchResult.isPresent() ? "成功" : "失败").append("\n");
 
-                        // 7. 测试订单查询功能 - 对应Flask /search_order
-                        result.append("\n【订单搜索测试】\n");
-                        Optional<Map<String, Object>> orderSearchResult = orderDao.findOrderWithCustomerInfo(orderId,
-                                testPhoneGuest);
-                        result.append("✅ 订单+手机号搜索: ").append(orderSearchResult.isPresent() ? "成功" : "失败").append("\n");
+                            // 8. 查看我的订单
+                            result.append("\n【查看我的订单】\n");
+                            List<Order> myOrders = orderDao.findByBuyerId(hostId);
+                            result.append("✅ 我的订单: 找到 ").append(myOrders.size()).append(" 个订单\n");
 
-                        // 8. 测试查看我的订单功能 - 对应Flask /view_orders
-                        result.append("\n【我的订单查询测试】\n");
-                        List<Order> myOrders = orderDao.findByBuyerId(hostId);
-                        result.append("✅ 我的订单查询: 找到 ").append(myOrders.size()).append(" 个订单\n");
+                            result.append("\n✅ OrderID自动生成: ").append(orderId.startsWith("OD") ? "成功" : "失败")
+                                    .append("\n");
+                        }
                     }
                 }
             }
 
-            // 🔧 安全环境清理
+            // 环境清理
             safeDeleteCustomers(testPhoneHost, testEmailHost, testPhoneGuest, testEmailGuest);
-            result.append("\n✅ 环境清理: 完成\n");
+            result.append("\n✅ 环境清理完成\n");
 
-            result.append("\n🎉 订票和支付流程测试完成！");
+            result.append("\n🎉 订票流程测试完成！（100%使用DAO，只测试实际功能）");
 
         } catch (Exception e) {
-            result.append("\n❌ 订票流程测试失败: ").append(e.getMessage());
+            result.append("\n❌ 测试失败: ").append(e.getMessage());
             safeDeleteCustomers(testPhoneHost, testEmailHost, testPhoneGuest, testEmailGuest);
         }
 

@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpSession;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Controller
@@ -25,7 +24,7 @@ public class BookingController {
     @Autowired
     private FlightDao flightDao;
 
-    // 对应 Flask: @app.route("/book_flight", methods=["POST", "GET"])
+    // 对应 Flask: @app.route("/book_flight", methods=["GET", "POST"])
     @GetMapping("/book_flight")
     public String bookFlightPage(@RequestParam("flight_id") String flightId,
             HttpSession session, Model model) {
@@ -35,7 +34,7 @@ public class BookingController {
         }
 
         try {
-            // 复用PassengerDao查询当前用户所有的乘机人信息
+            // 使用PassengerDao查询乘机人信息
             List<Map<String, Object>> passengers = passengerDao.findPassengerInfoByHostId(userId);
 
             model.addAttribute("flight_id", flightId);
@@ -59,20 +58,15 @@ public class BookingController {
         }
 
         try {
-            // 插入订单信息 - 复用OrderDao
             LocalDateTime currentTime = LocalDateTime.now();
 
+            // 使用OrderDao创建订单
             for (String guestId : selectedPassengers) {
-                // 复用OrderDao创建订单
                 orderDao.createOrder(guestId, userId, flightId, seatType, "Established", currentTime);
             }
 
-            // 构建支付页面的参数
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            String orderTimeStr = currentTime.format(formatter);
-
-            return "redirect:/pay?order_time=" + orderTimeStr +
-                    "&flight_id=" + flightId +
+            // 直接跳转到支付页面
+            return "redirect:/pay?flight_id=" + flightId +
                     "&seat_type=" + seatType +
                     "&passengers=" + String.join(",", selectedPassengers);
 
@@ -83,8 +77,7 @@ public class BookingController {
 
     // 对应 Flask: @app.route("/pay", methods=["GET"])
     @GetMapping("/pay")
-    public String payPage(@RequestParam("order_time") String orderTimeStr,
-            @RequestParam("passengers") String passengersStr,
+    public String payPage(@RequestParam("passengers") String passengersStr,
             @RequestParam("flight_id") String flightId,
             @RequestParam("seat_type") String seatType,
             HttpSession session, Model model) {
@@ -94,35 +87,30 @@ public class BookingController {
         }
 
         try {
-            // 解析时间和乘客列表
-            LocalDateTime orderTime = LocalDateTime.parse(orderTimeStr,
-                    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
             String[] passengers = passengersStr.split(",");
+            List<String> passengerList = Arrays.asList(passengers);
+
+            // 使用OrderDao获取最新订单信息
+            List<Order> recentOrders = orderDao.findLatestOrdersByCustomers(passengerList, userId);
 
             List<Map<String, Object>> orderIds = new ArrayList<>();
-
-            // 复用OrderDao获取订单信息
-            for (String passenger : passengers) {
-                List<Map<String, Object>> orderInfo = orderDao.findOrderIdsByCondition(
-                        passenger, userId, orderTime);
-                orderIds.addAll(orderInfo);
+            for (Order order : recentOrders) {
+                Map<String, Object> orderInfo = new HashMap<>();
+                orderInfo.put("OrderID", order.getOrderId());
+                orderIds.add(orderInfo);
             }
 
-            // 复用CustomerDao获取客户信息
+            // 使用CustomerDao和FlightDao获取信息
             Optional<Customer> customer = customerDao.findById(userId);
-            if (!customer.isPresent()) {
+            Optional<Flight> flight = flightDao.findByFlightId(flightId);
+
+            if (!customer.isPresent() || !flight.isPresent()) {
                 return "redirect:/";
             }
 
-            // 复用FlightDao获取航班信息
-            Optional<Flight> flight = flightDao.findByFlightId(flightId);
-            if (!flight.isPresent()) {
-                return "redirect:/choose_flight";
-            }
-
-            // 计算价格和折扣 - 完全对应Flask逻辑
+            // 计算价格和折扣
             Integer rank = customer.get().getRank();
-            double discount = Math.min(rank / 100.0, 0.2); // 最多打8折
+            double discount = Math.min(rank / 100.0, 0.2);
 
             BigDecimal originalAmount;
             if ("Economy".equals(seatType)) {
@@ -133,7 +121,6 @@ public class BookingController {
 
             BigDecimal discountedAmount = originalAmount.multiply(BigDecimal.valueOf(1 - discount));
 
-            // 设置模板变量 - 完全对应Flask的模板参数
             model.addAttribute("buyerid", userId);
             model.addAttribute("orderids", orderIds);
             model.addAttribute("cname", customer.get().getName());
@@ -161,38 +148,32 @@ public class BookingController {
         Map<String, Object> response = new HashMap<>();
         try {
             BigDecimal discountedAmount = new BigDecimal(discountedAmountStr);
-
-            // 解析订单ID列表 - 对应Flask的ast.literal_eval逻辑
-            // 简化处理：假设orderIdsStr是逗号分隔的OrderID列表
             String[] orderIdArray = orderIdsStr.replaceAll("[\\[\\]'\"\\s]", "").split(",");
             List<String> orderIds = Arrays.asList(orderIdArray);
 
-            // 复用CustomerDao获取客户信息
+            // 使用CustomerDao检查余额
             Optional<Customer> customer = customerDao.findById(buyerId);
             if (!customer.isPresent()) {
                 response.put("error", "Customer not found");
                 return response;
             }
 
-            // 检查余额是否足够 - 对应Flask逻辑
             Integer currentBalance = customer.get().getAccountBalance();
             if (currentBalance < discountedAmount.intValue()) {
                 response.put("error", "Insufficient balance");
                 return response;
             }
 
-            // 更新订单状态 - 复用OrderDao
+            // 使用OrderDao更新订单状态
             for (String orderId : orderIds) {
                 if (!orderId.trim().isEmpty()) {
-                    orderDao.updateOrderStatus(orderId.trim(), "paid");
+                    orderDao.updateOrderStatus(orderId.trim(), "Paid");
                 }
             }
 
-            // 扣除余额 - 复用CustomerDao
+            // 使用CustomerDao更新余额和等级
             Integer newBalance = currentBalance - discountedAmount.intValue();
             customerDao.updateAccountBalance(buyerId, newBalance);
-
-            // 更新等级 - 复用CustomerDao
             customerDao.incrementRank(buyerId);
 
             response.put("message", "Payment successful");
@@ -204,7 +185,7 @@ public class BookingController {
         }
     }
 
-    // 对应 Flask: @app.route("/search_order", methods=["POST"])
+    // ✅ 核心功能: 订单号+手机号查询（实际使用的唯一查询方式）
     @PostMapping("/search_order")
     @ResponseBody
     public Map<String, Object> searchOrder(@RequestBody Map<String, String> data) {
@@ -220,7 +201,7 @@ public class BookingController {
                 return response;
             }
 
-            // 复用OrderDao查询订单
+            // 使用OrderDao查询订单（唯一的订单查询方式）
             Optional<Map<String, Object>> order = orderDao.findOrderWithCustomerInfo(orderNumber, phoneNumber);
 
             if (order.isPresent()) {
@@ -238,11 +219,10 @@ public class BookingController {
         return response;
     }
 
-    // 对应 Flask: @app.route("/view_orderID", methods=["GET"])
     @GetMapping("/view_orderID")
     public String viewOrderById(@RequestParam("order_number") String orderNumber, Model model) {
         try {
-            // 复用OrderDao查询订单详情
+            // 使用OrderDao查询订单详情
             Optional<Order> order = orderDao.findByOrderId(orderNumber);
 
             if (order.isPresent()) {
@@ -259,7 +239,6 @@ public class BookingController {
         }
     }
 
-    // 对应 Flask: @app.route("/view_orders", methods=["GET"])
     @GetMapping("/view_orders")
     public String viewOrders(HttpSession session, Model model) {
         String customerId = (String) session.getAttribute("user_id");
@@ -268,7 +247,7 @@ public class BookingController {
         }
 
         try {
-            // 复用OrderDao查询用户的所有订单
+            // 使用OrderDao查询用户的所有订单
             List<Order> orders = orderDao.findByBuyerId(customerId);
             model.addAttribute("orders", orders);
             return "view_orders";
