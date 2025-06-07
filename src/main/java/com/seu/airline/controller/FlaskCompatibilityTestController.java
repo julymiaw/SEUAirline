@@ -8,6 +8,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -76,8 +79,10 @@ public class FlaskCompatibilityTestController {
         result.append("  /test/account-balance    - 账户余额测试\n");
         result.append("  /test/airport-search     - 机场搜索测试\n");
         result.append("  /test/flight-query       - 航班查询测试\n");
+        result.append("  /test/flight-search-api  - 航班搜索API测试\n");
         result.append("  /test/order-manage       - 订单管理测试\n");
         result.append("  /test/passenger-manage   - 乘客管理测试\n");
+        result.append("  /test/booking-workflow   - 订票和支付流程测试\n");
         result.append("\n【系统诊断】\n");
         result.append("  /test/db-stats           - 数据库统计\n");
         result.append("  /test/db-connection      - 连接测试\n");
@@ -87,7 +92,7 @@ public class FlaskCompatibilityTestController {
         return result.toString();
     }
 
-    // 测试1: 用户注册功能 - 修复删除问题
+    // 测试1: 用户注册功能
     @GetMapping("/test/user-register")
     @ResponseBody
     public String testUserRegister() {
@@ -137,7 +142,7 @@ public class FlaskCompatibilityTestController {
         return result.toString();
     }
 
-    // 测试2: 用户登录功能 - 修复删除问题
+    // 测试2: 用户登录功能
     @GetMapping("/test/user-login")
     @ResponseBody
     public String testUserLogin() {
@@ -196,7 +201,7 @@ public class FlaskCompatibilityTestController {
         return result.toString();
     }
 
-    // 测试3: 密码重置功能 - 修复删除问题
+    // 测试3: 密码重置功能
     @GetMapping("/test/password-reset")
     @ResponseBody
     public String testPasswordReset() {
@@ -255,7 +260,7 @@ public class FlaskCompatibilityTestController {
         return result.toString();
     }
 
-    // 测试4: 账户余额功能 - 修复删除问题
+    // 测试4: 账户余额功能
     @GetMapping("/test/account-balance")
     @ResponseBody
     public String testAccountBalance() {
@@ -319,7 +324,7 @@ public class FlaskCompatibilityTestController {
         return result.toString();
     }
 
-    // 测试5: 机场搜索功能（无需修改）
+    // 测试5: 机场搜索功能
     @GetMapping("/test/airport-search")
     @ResponseBody
     public String testAirportSearch() {
@@ -363,7 +368,7 @@ public class FlaskCompatibilityTestController {
         return result.toString();
     }
 
-    // 测试6: 航班查询功能（无需修改）
+    // 测试6: 航班查询功能
     @GetMapping("/test/flight-query")
     @ResponseBody
     public String testFlightQuery() {
@@ -405,7 +410,84 @@ public class FlaskCompatibilityTestController {
         return result.toString();
     }
 
-    // 测试7: 订单管理功能（无需修改）
+    @GetMapping("/test/flight-search-api")
+    @ResponseBody
+    public String testFlightSearchApi() {
+        StringBuilder result = new StringBuilder();
+        result.append("=== 航班搜索API功能测试 ===\n\n");
+
+        try {
+            // 1. 测试机场搜索API - 对应Flask /api/airports
+            result.append("【机场搜索API测试】\n");
+            List<Airport> allAirports = airportDao.findAll();
+            if (!allAirports.isEmpty()) {
+                String testQuery = allAirports.get(0).getAirportId();
+                List<Airport> searchResult = airportDao.findByIdOrNameContaining(testQuery);
+                result.append("✅ /api/airports模拟: 搜索'").append(testQuery).append("'找到 ").append(searchResult.size())
+                        .append(" 个机场\n");
+
+                if (!searchResult.isEmpty()) {
+                    Airport airport = searchResult.get(0);
+                    result.append("   示例: ").append(airport.getAirportId()).append(" - ")
+                            .append(airport.getAirportName()).append("\n");
+                }
+            }
+
+            // 2. 测试航班号搜索 - 对应Flask /search_flightnum
+            result.append("\n【航班号搜索测试】\n");
+            List<Flight> allFlights = flightDao.findAll();
+            if (!allFlights.isEmpty()) {
+                String testFlightId = allFlights.get(0).getFlightId();
+                Optional<Flight> flightResult = flightDao.findByFlightId(testFlightId);
+                result.append("✅ 航班号搜索: 搜索'").append(testFlightId).append("' ");
+                result.append(flightResult.isPresent() ? "成功" : "失败").append("\n");
+
+                if (flightResult.isPresent()) {
+                    Flight flight = flightResult.get();
+                    result.append("   航班路线: ").append(flight.getRouteId()).append("\n");
+                    result.append("   机型: ").append(flight.getAircraftId()).append("\n");
+                }
+            }
+
+            // 3. 测试复杂航班搜索 - 对应Flask /search_flights
+            result.append("\n【复杂航班搜索测试】\n");
+            List<Route> routes = routeDao.findAll();
+            if (!routes.isEmpty()) {
+                Route testRoute = routes.get(0);
+                String depId = testRoute.getDepartureAirportId();
+                String arrId = testRoute.getArrivalAirportId();
+
+                // 获取机场名称
+                Optional<Airport> depAirport = airportDao.findByAirportId(depId);
+                Optional<Airport> arrAirport = airportDao.findByAirportId(arrId);
+
+                if (depAirport.isPresent() && arrAirport.isPresent()) {
+                    result.append("✅ 测试航线: ").append(depAirport.get().getAirportName());
+                    result.append(" → ").append(arrAirport.get().getAirportName()).append("\n");
+
+                    // 模拟今天的航班搜索
+                    LocalDate today = LocalDate.now();
+                    List<Flight> flightResults = flightDao.searchFlightsByRoute(depId, arrId, today);
+                    result.append("✅ 航班搜索结果: 找到 ").append(flightResults.size()).append(" 个航班\n");
+
+                    if (!flightResults.isEmpty()) {
+                        Flight sampleFlight = flightResults.get(0);
+                        result.append("   示例航班: ").append(sampleFlight.getFlightId()).append("\n");
+                        result.append("   出发时间: ").append(sampleFlight.getDepartureTime()).append("\n");
+                    }
+                }
+            }
+
+            result.append("\n🎉 航班搜索API测试完成！");
+
+        } catch (Exception e) {
+            result.append("\n❌ 航班搜索API测试失败: ").append(e.getMessage());
+        }
+
+        return result.toString();
+    }
+
+    // 测试7: 订单管理功能
     @GetMapping("/test/order-manage")
     @ResponseBody
     public String testOrderManage() {
@@ -453,7 +535,7 @@ public class FlaskCompatibilityTestController {
         return result.toString();
     }
 
-    // 测试8: 乘客管理功能 - 修复删除问题
+    // 测试8: 乘客管理功能
     @GetMapping("/test/passenger-manage")
     @ResponseBody
     public String testPassengerManage() {
@@ -537,7 +619,146 @@ public class FlaskCompatibilityTestController {
         return result.toString();
     }
 
-    // 测试9: 数据库统计（无需修改）
+    // 测试订票和支付流程
+    @GetMapping("/test/booking-workflow")
+    @ResponseBody
+    public String testBookingWorkflow() {
+        StringBuilder result = new StringBuilder();
+        result.append("=== 订票和支付流程测试 ===\n\n");
+
+        String testEmailHost = "booking-host@test.com";
+        String testPhoneHost = "13800001001";
+        String testEmailGuest = "booking-guest@test.com";
+        String testPhoneGuest = "13800001002";
+
+        try {
+            // 🔧 安全环境准备
+            safeDeleteCustomers(testPhoneHost, testEmailHost, testPhoneGuest, testEmailGuest);
+
+            // 1. 创建测试用户（Host和Guest）
+            result.append("【创建测试用户】\n");
+
+            // 创建Host用户
+            Customer hostUser = new Customer();
+            hostUser.setName("订票Host用户");
+            hostUser.setPassword("host123");
+            hostUser.setAccountBalance(5000); // 足够的余额
+            hostUser.setPhone(testPhoneHost);
+            hostUser.setEmail(testEmailHost);
+            hostUser.setIdentity("110101199001010101");
+            hostUser.setRank(10); // 10%折扣
+
+            customerDao.register(hostUser);
+
+            // 创建Guest用户
+            Customer guestUser = new Customer();
+            guestUser.setName("订票Guest用户");
+            guestUser.setPassword("guest123");
+            guestUser.setAccountBalance(0);
+            guestUser.setPhone(testPhoneGuest);
+            guestUser.setEmail(testEmailGuest);
+            guestUser.setIdentity("110101199001010102");
+            guestUser.setRank(0);
+
+            customerDao.register(guestUser);
+            result.append("✅ 测试用户创建完成\n");
+
+            // 2. 获取用户ID并建立乘客关系
+            Optional<Customer> hostCustomer = customerDao.findByEmailAndPassword(testEmailHost, "host123");
+            Optional<Customer> guestCustomer = customerDao.findByEmailAndPassword(testEmailGuest, "guest123");
+
+            if (hostCustomer.isPresent() && guestCustomer.isPresent()) {
+                String hostId = hostCustomer.get().getCustomerId();
+                String guestId = guestCustomer.get().getCustomerId();
+
+                // 添加乘客关系
+                passengerDao.addPassenger(hostId, guestId);
+                result.append("✅ 乘客关系建立完成\n");
+
+                // 3. 测试乘客查询功能 - 对应Flask /passengers
+                result.append("\n【乘客查询测试】\n");
+                List<Map<String, Object>> passengerInfo = passengerDao.findPassengerInfoByHostId(hostId);
+                result.append("✅ 查询乘客信息: 找到 ").append(passengerInfo.size()).append(" 个乘客\n");
+
+                // 4. 测试订单创建功能 - 对应Flask /book_flight
+                result.append("\n【订单创建测试】\n");
+                List<Flight> flights = flightDao.findAll();
+                if (!flights.isEmpty()) {
+                    String testFlightId = flights.get(0).getFlightId();
+                    LocalDateTime orderTime = LocalDateTime.now();
+
+                    // 创建测试订单
+                    int orderResult = orderDao.createOrder(guestId, hostId, testFlightId, "Economy", "Established",
+                            orderTime);
+                    result.append("✅ 创建订单: 影响行数 ").append(orderResult).append("\n");
+
+                    // 5. 测试订单查询功能
+                    result.append("\n【订单查询测试】\n");
+                    List<Map<String, Object>> orderIds = orderDao.findOrderIdsByCondition(guestId, hostId, orderTime);
+                    result.append("✅ 订单ID查询: 找到 ").append(orderIds.size()).append(" 个订单\n");
+
+                    if (!orderIds.isEmpty()) {
+                        String orderId = (String) orderIds.get(0).get("OrderID");
+                        result.append("   订单号: ").append(orderId).append("\n");
+
+                        // 6. 测试支付流程 - 对应Flask /pay_order
+                        result.append("\n【支付流程测试】\n");
+                        Flight flight = flights.get(0);
+                        BigDecimal economyPrice = flight.getEconomyPrice();
+
+                        // 计算折扣价格
+                        double discount = Math.min(10 / 100.0, 0.2); // 10%折扣
+                        BigDecimal discountedAmount = economyPrice.multiply(BigDecimal.valueOf(1 - discount));
+
+                        result.append("   原价: ").append(economyPrice).append("\n");
+                        result.append("   折扣: ").append(discount * 100).append("%\n");
+                        result.append("   实付: ").append(discountedAmount).append("\n");
+
+                        // 更新订单状态为已支付
+                        int payResult = orderDao.updateOrderStatus(orderId, "paid");
+                        result.append("✅ 订单支付: 影响行数 ").append(payResult).append("\n");
+
+                        // 更新用户余额
+                        Integer originalBalance = hostCustomer.get().getAccountBalance();
+                        Integer newBalance = originalBalance - discountedAmount.intValue();
+                        int balanceResult = customerDao.updateAccountBalance(hostId, newBalance);
+                        result.append("✅ 余额更新: 影响行数 ").append(balanceResult).append("\n");
+                        result.append("   余额变化: ").append(originalBalance).append(" → ").append(newBalance)
+                                .append("\n");
+
+                        // 增加用户等级
+                        int rankResult = customerDao.incrementRank(hostId);
+                        result.append("✅ 等级更新: 影响行数 ").append(rankResult).append("\n");
+
+                        // 7. 测试订单查询功能 - 对应Flask /search_order
+                        result.append("\n【订单搜索测试】\n");
+                        Optional<Map<String, Object>> orderSearchResult = orderDao.findOrderWithCustomerInfo(orderId,
+                                testPhoneGuest);
+                        result.append("✅ 订单+手机号搜索: ").append(orderSearchResult.isPresent() ? "成功" : "失败").append("\n");
+
+                        // 8. 测试查看我的订单功能 - 对应Flask /view_orders
+                        result.append("\n【我的订单查询测试】\n");
+                        List<Order> myOrders = orderDao.findByBuyerId(hostId);
+                        result.append("✅ 我的订单查询: 找到 ").append(myOrders.size()).append(" 个订单\n");
+                    }
+                }
+            }
+
+            // 🔧 安全环境清理
+            safeDeleteCustomers(testPhoneHost, testEmailHost, testPhoneGuest, testEmailGuest);
+            result.append("\n✅ 环境清理: 完成\n");
+
+            result.append("\n🎉 订票和支付流程测试完成！");
+
+        } catch (Exception e) {
+            result.append("\n❌ 订票流程测试失败: ").append(e.getMessage());
+            safeDeleteCustomers(testPhoneHost, testEmailHost, testPhoneGuest, testEmailGuest);
+        }
+
+        return result.toString();
+    }
+
+    // 测试9: 数据库统计
     @GetMapping("/test/db-stats")
     @ResponseBody
     public String testDatabaseStats() {
