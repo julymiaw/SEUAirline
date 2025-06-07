@@ -211,28 +211,41 @@
                 $($(this).data("target")).show();
             });
 
+            // 🔧 修复：充值表单提交逻辑 - 完全对应后端响应
             $("#charge-form").on("submit", function (event) {
                 event.preventDefault();
 
-                const money = $("#money").val();
-                if (money) {
+                const money = parseInt($("#money").val());
+                if (money && money > 0) {
                     $.ajax({
                         url: "/charge",
                         type: "POST",
                         contentType: "application/json",
                         data: JSON.stringify({ money: money }),
                         success: function (response) {
-                            alert(response.message);
+                            console.log("充值响应:", response); // 调试日志
+
                             if (response.status === "success") {
-                                alert("充值成功，请刷新页面");
+                                // 🔧 修复：显示详细的成功信息
+                                alert(`充值成功！\n充值金额：${response.charged_amount}\n原余额：${response.original_balance}\n当前余额：${response.new_balance}`);
+
+                                // 🔧 修复：立即更新页面上的余额显示
+                                $("#remain").text(response.new_balance);
+
+                                // 清空表单
+                                $("#money").val("");
+                            } else {
+                                // 🔧 修复：统一错误处理
+                                alert("充值失败：" + (response.error || response.message || "未知错误"));
                             }
                         },
-                        error: function () {
-                            alert("充值失败，请稍后再试。");
+                        error: function (xhr, status, error) {
+                            console.error("充值请求失败:", xhr.responseText);
+                            alert("充值失败，请稍后再试。详细错误：" + error);
                         },
                     });
                 } else {
-                    alert("请输入有效的充值金额。");
+                    alert("请输入有效的充值金额（必须大于0）。");
                 }
             });
         });

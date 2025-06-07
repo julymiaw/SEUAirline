@@ -170,35 +170,65 @@ public class UserController {
             String userId = (String) session.getAttribute("user_id");
             if (userId == null) {
                 response.put("error", "Please login first");
-                response.put("state", "error");
+                response.put("status", "error");
                 return response;
             }
 
-            Integer money = (Integer) data.get("money");
+            // 🔧 修复：确保正确处理money参数的各种类型
+            Object moneyObj = data.get("money");
+            Integer money;
 
-            // 复用DAO层方法，先查询当前余额
+            if (moneyObj instanceof Integer) {
+                money = (Integer) moneyObj;
+            } else if (moneyObj instanceof String) {
+                try {
+                    money = Integer.parseInt((String) moneyObj);
+                } catch (NumberFormatException e) {
+                    response.put("error", "Invalid money format");
+                    response.put("status", "error");
+                    return response;
+                }
+            } else if (moneyObj instanceof Double) {
+                money = ((Double) moneyObj).intValue();
+            } else {
+                response.put("error", "Invalid money format");
+                response.put("status", "error");
+                return response;
+            }
+
+            if (money <= 0) {
+                response.put("error", "充值金额必须大于0");
+                response.put("status", "error");
+                return response;
+            }
+
+            // 🔧 使用CustomerDao实现Flask的完整充值逻辑
             Optional<Customer> customer = customerDao.findById(userId);
 
             if (customer.isPresent()) {
                 Integer currentBalance = customer.get().getAccountBalance();
                 Integer newBalance = currentBalance + money;
 
-                // 复用DAO层方法更新余额
+                // 使用DAO更新余额
                 int result = customerDao.updateAccountBalance(userId, newBalance);
                 if (result > 0) {
-                    response.put("message", "Charge successful");
-                    response.put("state", "successful");
+                    // 🔧 修复：返回前端期望的字段
+                    response.put("message", "充值成功！");
+                    response.put("status", "success");
+                    response.put("new_balance", newBalance);
+                    response.put("charged_amount", money);
+                    response.put("original_balance", currentBalance);
                 } else {
-                    response.put("error", "Charge failed");
-                    response.put("state", "error");
+                    response.put("error", "充值失败");
+                    response.put("status", "error");
                 }
             } else {
-                response.put("error", "User not found");
-                response.put("state", "error");
+                response.put("error", "用户不存在");
+                response.put("status", "error");
             }
         } catch (Exception e) {
-            response.put("error", e.getMessage());
-            response.put("state", "error");
+            response.put("error", "充值过程中发生错误: " + e.getMessage());
+            response.put("status", "error");
         }
         return response;
     }
