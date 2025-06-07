@@ -3,7 +3,7 @@ package com.seu.airline.entity;
 import java.math.BigDecimal;
 
 public class Customer {
-    private Integer customerId; // 注意：这里应该是Integer，数据库自增主键
+    private Integer customerId;
     private String name;
     private String password;
     private BigDecimal accountBalance;
@@ -99,6 +99,7 @@ public class Customer {
                 ", name='" + name + '\'' +
                 ", phone='" + phone + '\'' +
                 ", email='" + email + '\'' +
+                ", accountBalance=" + accountBalance +
                 ", rank=" + rank +
                 '}';
     }
