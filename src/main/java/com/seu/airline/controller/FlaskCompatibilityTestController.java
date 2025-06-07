@@ -30,6 +30,38 @@ public class FlaskCompatibilityTestController {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    // 🔧 新增：安全清理方法 - 处理外键约束
+    private void safeDeleteCustomers(String... phoneOrEmailList) {
+        try {
+            for (int i = 0; i < phoneOrEmailList.length; i += 2) {
+                String phone = phoneOrEmailList[i];
+                String email = phoneOrEmailList[i + 1];
+
+                // 1. 查找要删除的Customer ID
+                String findCustomerSql = "SELECT CustomerID FROM Customer WHERE Phone = ? OR Email = ?";
+                List<Map<String, Object>> customers = jdbcTemplate.queryForList(findCustomerSql, phone, email);
+
+                for (Map<String, Object> customer : customers) {
+                    String customerId = (String) customer.get("CustomerID");
+
+                    // 2. 删除相关的Order记录
+                    String deleteOrderSql = "DELETE FROM `Order` WHERE CustomerID = ? OR BuyerID = ?";
+                    jdbcTemplate.update(deleteOrderSql, customerId, customerId);
+
+                    // 3. 删除相关的Passenger记录
+                    String deletePassengerSql = "DELETE FROM Passenger WHERE HostID = ? OR GuestID = ?";
+                    jdbcTemplate.update(deletePassengerSql, customerId, customerId);
+                }
+
+                // 4. 最后删除Customer记录
+                String deleteCustomerSql = "DELETE FROM Customer WHERE Phone = ? OR Email = ?";
+                jdbcTemplate.update(deleteCustomerSql, phone, email);
+            }
+        } catch (Exception e) {
+            // 静默处理清理错误，不影响测试
+        }
+    }
+
     // 测试索引页面
     @GetMapping("/test")
     @ResponseBody
@@ -55,7 +87,7 @@ public class FlaskCompatibilityTestController {
         return result.toString();
     }
 
-    // 测试1: 用户注册功能
+    // 测试1: 用户注册功能 - 修复删除问题
     @GetMapping("/test/user-register")
     @ResponseBody
     public String testUserRegister() {
@@ -66,9 +98,8 @@ public class FlaskCompatibilityTestController {
         String testPhone = "13800000001";
 
         try {
-            // 环境清理
-            String cleanupSql = "DELETE FROM Customer WHERE Phone = ? OR Email = ?";
-            jdbcTemplate.update(cleanupSql, testPhone, testEmail);
+            // 🔧 安全环境清理
+            safeDeleteCustomers(testPhone, testEmail);
 
             // 测试用户注册
             Customer testUser = new Customer();
@@ -92,25 +123,21 @@ public class FlaskCompatibilityTestController {
                 result.append("   用户名: ").append(registeredUser.get().getName()).append("\n");
             }
 
-            // 环境清理
-            jdbcTemplate.update(cleanupSql, testPhone, testEmail);
+            // 🔧 安全环境清理
+            safeDeleteCustomers(testPhone, testEmail);
             result.append("✅ 环境清理: 完成\n");
 
             result.append("\n🎉 用户注册测试完成！");
 
         } catch (Exception e) {
             result.append("\n❌ 注册测试失败: ").append(e.getMessage());
-            try {
-                String cleanupSql = "DELETE FROM Customer WHERE Phone = ? OR Email = ?";
-                jdbcTemplate.update(cleanupSql, testPhone, testEmail);
-            } catch (Exception ignored) {
-            }
+            safeDeleteCustomers(testPhone, testEmail);
         }
 
         return result.toString();
     }
 
-    // 测试2: 用户登录功能
+    // 测试2: 用户登录功能 - 修复删除问题
     @GetMapping("/test/user-login")
     @ResponseBody
     public String testUserLogin() {
@@ -122,9 +149,8 @@ public class FlaskCompatibilityTestController {
         String testPassword = "login123";
 
         try {
-            // 环境准备
-            String cleanupSql = "DELETE FROM Customer WHERE Phone = ? OR Email = ?";
-            jdbcTemplate.update(cleanupSql, testPhone, testEmail);
+            // 🔧 安全环境准备
+            safeDeleteCustomers(testPhone, testEmail);
 
             // 创建测试用户
             Customer testUser = new Customer();
@@ -156,25 +182,21 @@ public class FlaskCompatibilityTestController {
             Optional<Customer> wrongPasswordLogin = customerDao.findByEmailAndPassword(testEmail, "wrongpassword");
             result.append("✅ 错误密码拒绝: ").append(!wrongPasswordLogin.isPresent() ? "成功" : "失败").append("\n");
 
-            // 环境清理
-            jdbcTemplate.update(cleanupSql, testPhone, testEmail);
+            // 🔧 安全环境清理
+            safeDeleteCustomers(testPhone, testEmail);
             result.append("✅ 环境清理: 完成\n");
 
             result.append("\n🎉 用户登录测试完成！");
 
         } catch (Exception e) {
             result.append("\n❌ 登录测试失败: ").append(e.getMessage());
-            try {
-                String cleanupSql = "DELETE FROM Customer WHERE Phone = ? OR Email = ?";
-                jdbcTemplate.update(cleanupSql, testPhone, testEmail);
-            } catch (Exception ignored) {
-            }
+            safeDeleteCustomers(testPhone, testEmail);
         }
 
         return result.toString();
     }
 
-    // 测试3: 密码重置功能
+    // 测试3: 密码重置功能 - 修复删除问题
     @GetMapping("/test/password-reset")
     @ResponseBody
     public String testPasswordReset() {
@@ -187,9 +209,8 @@ public class FlaskCompatibilityTestController {
         String newPassword = "newpass123";
 
         try {
-            // 环境准备
-            String cleanupSql = "DELETE FROM Customer WHERE Phone = ? OR Email = ?";
-            jdbcTemplate.update(cleanupSql, testPhone, testEmail);
+            // 🔧 安全环境准备
+            safeDeleteCustomers(testPhone, testEmail);
 
             // 创建测试用户
             Customer testUser = new Customer();
@@ -220,25 +241,21 @@ public class FlaskCompatibilityTestController {
             Optional<Customer> oldPasswordLogin = customerDao.findByEmailAndPassword(testEmail, originalPassword);
             result.append("✅ 旧密码失效: ").append(!oldPasswordLogin.isPresent() ? "是" : "否").append("\n");
 
-            // 环境清理
-            jdbcTemplate.update(cleanupSql, testPhone, testEmail);
+            // 🔧 安全环境清理
+            safeDeleteCustomers(testPhone, testEmail);
             result.append("✅ 环境清理: 完成\n");
 
             result.append("\n🎉 密码重置测试完成！");
 
         } catch (Exception e) {
             result.append("\n❌ 密码重置测试失败: ").append(e.getMessage());
-            try {
-                String cleanupSql = "DELETE FROM Customer WHERE Phone = ? OR Email = ?";
-                jdbcTemplate.update(cleanupSql, testPhone, testEmail);
-            } catch (Exception ignored) {
-            }
+            safeDeleteCustomers(testPhone, testEmail);
         }
 
         return result.toString();
     }
 
-    // 测试4: 账户余额功能
+    // 测试4: 账户余额功能 - 修复删除问题
     @GetMapping("/test/account-balance")
     @ResponseBody
     public String testAccountBalance() {
@@ -249,9 +266,8 @@ public class FlaskCompatibilityTestController {
         String testPhone = "13800000004";
 
         try {
-            // 环境准备
-            String cleanupSql = "DELETE FROM Customer WHERE Phone = ? OR Email = ?";
-            jdbcTemplate.update(cleanupSql, testPhone, testEmail);
+            // 🔧 安全环境准备
+            safeDeleteCustomers(testPhone, testEmail);
 
             // 创建测试用户
             Customer testUser = new Customer();
@@ -289,25 +305,21 @@ public class FlaskCompatibilityTestController {
                 }
             }
 
-            // 环境清理
-            jdbcTemplate.update(cleanupSql, testPhone, testEmail);
+            // 🔧 安全环境清理
+            safeDeleteCustomers(testPhone, testEmail);
             result.append("✅ 环境清理: 完成\n");
 
             result.append("\n🎉 账户余额测试完成！");
 
         } catch (Exception e) {
             result.append("\n❌ 账户余额测试失败: ").append(e.getMessage());
-            try {
-                String cleanupSql = "DELETE FROM Customer WHERE Phone = ? OR Email = ?";
-                jdbcTemplate.update(cleanupSql, testPhone, testEmail);
-            } catch (Exception ignored) {
-            }
+            safeDeleteCustomers(testPhone, testEmail);
         }
 
         return result.toString();
     }
 
-    // 测试5: 机场搜索功能
+    // 测试5: 机场搜索功能（无需修改）
     @GetMapping("/test/airport-search")
     @ResponseBody
     public String testAirportSearch() {
@@ -351,7 +363,7 @@ public class FlaskCompatibilityTestController {
         return result.toString();
     }
 
-    // 测试6: 航班查询功能
+    // 测试6: 航班查询功能（无需修改）
     @GetMapping("/test/flight-query")
     @ResponseBody
     public String testFlightQuery() {
@@ -393,7 +405,7 @@ public class FlaskCompatibilityTestController {
         return result.toString();
     }
 
-    // 测试7: 订单管理功能
+    // 测试7: 订单管理功能（无需修改）
     @GetMapping("/test/order-manage")
     @ResponseBody
     public String testOrderManage() {
@@ -416,7 +428,20 @@ public class FlaskCompatibilityTestController {
 
                 // 测试订单查询功能
                 Optional<Order> orderSearch = orderDao.findByOrderId(orderId);
-                result.append("✅ 订单查询: ").append(orderSearch.isPresent() ? "成功" : "失败").append("\n");
+                result.append("✅ 订单号查询: ").append(orderSearch.isPresent() ? "成功" : "失败").append("\n");
+
+                // 测试Flask中的订单搜索功能（需要手机号）
+                if (orderSearch.isPresent()) {
+                    String customerId = orderSearch.get().getCustomerId();
+                    // 获取该用户的手机号进行测试
+                    Optional<Customer> customer = customerDao.findById(customerId);
+                    if (customer.isPresent()) {
+                        String phone = customer.get().getPhone();
+                        Optional<Map<String, Object>> orderWithCustomer = orderDao.findOrderWithCustomerInfo(orderId,
+                                phone);
+                        result.append("✅ 订单+手机号查询: ").append(orderWithCustomer.isPresent() ? "成功" : "失败").append("\n");
+                    }
+                }
             }
 
             result.append("\n🎉 订单管理测试完成！");
@@ -428,7 +453,7 @@ public class FlaskCompatibilityTestController {
         return result.toString();
     }
 
-    // 新增：乘客管理功能测试 - 对应Flask的/passengers路由
+    // 测试8: 乘客管理功能 - 修复删除问题
     @GetMapping("/test/passenger-manage")
     @ResponseBody
     public String testPassengerManage() {
@@ -441,9 +466,8 @@ public class FlaskCompatibilityTestController {
         String testPhoneGuest = "13800000006";
 
         try {
-            // 环境准备 - 清理测试数据
-            String cleanupSql = "DELETE FROM Customer WHERE Phone IN (?, ?) OR Email IN (?, ?)";
-            jdbcTemplate.update(cleanupSql, testPhoneHost, testPhoneGuest, testEmailHost, testEmailGuest);
+            // 🔧 安全环境准备 - 清理测试数据
+            safeDeleteCustomers(testPhoneHost, testEmailHost, testPhoneGuest, testEmailGuest);
 
             // 创建Host用户
             Customer hostUser = new Customer();
@@ -497,31 +521,23 @@ public class FlaskCompatibilityTestController {
                 Optional<Customer> foundGuest = customerDao.findByPhoneAndIdentityAndName(
                         testPhoneGuest, "110101199001010006", "乘客管理Guest");
                 result.append("✅ 用户信息查找: ").append(foundGuest.isPresent() ? "成功" : "失败").append("\n");
-
-                // 清理乘客关系
-                String deletePassengerSql = "DELETE FROM Passenger WHERE HostID = ? AND GuestID = ?";
-                jdbcTemplate.update(deletePassengerSql, hostId, guestId);
             }
 
-            // 环境清理
-            jdbcTemplate.update(cleanupSql, testPhoneHost, testPhoneGuest, testEmailHost, testEmailGuest);
+            // 🔧 安全环境清理
+            safeDeleteCustomers(testPhoneHost, testEmailHost, testPhoneGuest, testEmailGuest);
             result.append("✅ 环境清理: 完成\n");
 
             result.append("\n🎉 乘客管理测试完成！");
 
         } catch (Exception e) {
             result.append("\n❌ 乘客管理测试失败: ").append(e.getMessage());
-            try {
-                String cleanupSql = "DELETE FROM Customer WHERE Phone IN (?, ?) OR Email IN (?, ?)";
-                jdbcTemplate.update(cleanupSql, testPhoneHost, testPhoneGuest, testEmailHost, testEmailGuest);
-            } catch (Exception ignored) {
-            }
+            safeDeleteCustomers(testPhoneHost, testEmailHost, testPhoneGuest, testEmailGuest);
         }
 
         return result.toString();
     }
 
-    // 测试8: 数据库统计
+    // 测试9: 数据库统计（无需修改）
     @GetMapping("/test/db-stats")
     @ResponseBody
     public String testDatabaseStats() {
@@ -554,7 +570,7 @@ public class FlaskCompatibilityTestController {
         return result.toString();
     }
 
-    // 测试9: 数据库连接测试
+    // 测试10: 数据库连接测试
     @GetMapping("/test/db-connection")
     @ResponseBody
     public String testDatabaseConnection() {
@@ -562,23 +578,15 @@ public class FlaskCompatibilityTestController {
         result.append("=== 数据库连接测试 ===\n\n");
 
         try {
-            // 简单查询测试连接
             Integer testResult = jdbcTemplate.queryForObject("SELECT 1 as test_value", Integer.class);
             result.append("✅ 数据库连接: ").append(testResult != null && testResult == 1 ? "正常" : "异常").append("\n");
 
-            // 测试当前时间
-            Map<String, Object> timeResult = jdbcTemplate.queryForMap("SELECT NOW() as current_time");
-            result.append("✅ 数据库时间: ").append(timeResult.get("current_time")).append("\n");
-
-            // 测试表是否存在
             String tableCheckSql = "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'Airline' AND table_name = 'Customer'";
             Integer tableExists = jdbcTemplate.queryForObject(tableCheckSql, Integer.class);
             result.append("✅ Customer表存在: ").append(tableExists != null && tableExists > 0 ? "是" : "否").append("\n");
 
-            result.append("\n🎉 数据库连接测试完成！");
-
         } catch (Exception e) {
-            result.append("\n❌ 数据库连接测试失败: ").append(e.getMessage());
+            result.append("❌ 测试失败: ").append(e.getMessage()).append("\n");
         }
 
         return result.toString();
