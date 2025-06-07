@@ -4,13 +4,13 @@
 <head>
     <meta charset="utf-8">
     <title>首页</title>
-    <link rel='stylesheet' href="/static/css/base/style.css" />
-    <link rel="stylesheet" href="/static/css/base/main.css" />
-    <link rel="stylesheet" href="/static/css/components/index.css" />
-    <link rel="stylesheet" href="/static/css/components/selectcity.css" />
+    <link rel='stylesheet' href="/css/base/style.css" />
+    <link rel="stylesheet" href="/css/base/main.css" />
+    <link rel="stylesheet" href="/css/components/index.css" />
+    <link rel="stylesheet" href="/css/components/selectcity.css" />
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"
         integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-    <script src="/static/js/vendor/jquery-ui-1.14.1.custom/jquery-ui.js"></script>
+    <script src="/js/vendor/jquery-ui-1.14.1.custom/jquery-ui.js"></script>
     <style>
         /* 地图覆盖全屏样式 */
         #map-container {
@@ -84,7 +84,7 @@
 <body>
     <!-- 地图容器 -->
     <div id="map-container">
-        <iframe src="/static/data/china_routes_airports_map.html" width="100%" height="100%" frameborder="0"></iframe>
+        <iframe src="/data/china_routes_airports_map.html" width="100%" height="100%" frameborder="0"></iframe>
     </div>
     <div id="content" class="main">
         <div class="hd">
@@ -264,7 +264,7 @@
                     a.indexOf("destination-city-status") != -1
                 ) {
                     $.ajax({
-                        url: '/static/data/hotCity.html',
+                        url: '/data/hotCity.html',
                         success: function (data) {
                             $("#city_fields").html(data);
                             if (
