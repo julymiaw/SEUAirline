@@ -310,9 +310,17 @@
 
             $(document).on("click", ".select_results .hotCity .city li", function () {
                 $(this).parents("div.location-component").find("label").css("display", "none");
-                var sValue = $(this).find("span").text();
-                $(this).parents("div.location-component").find("input:text").val(sValue);
-                $(this).parents("div.location-component").find("input:text").attr("data-airportcode", $(this).attr("_3code"));
+
+                var displayName = $(this).find("span").text();
+                var airportCode = $(this).attr("_3code");
+
+                // 显示中文名称
+                $(this).parents("div.location-component").find("input:text").val(displayName);
+                $(this).parents("div.location-component").find("input:text").data("airport-code", airportCode);
+
+                // 调试信息
+                console.log("选择了:", displayName, "代码:", airportCode);
+
                 $(this).parents("div.location-component").find("input:text").focusout();
                 $("body").find("#city_fields,#iframe_ie6").remove();
             });
@@ -343,65 +351,86 @@
         });
 
         function submitForm() {
-            // 获取表单数据，这里假设有一个id为"searchForm"的表单
+            // 获取机场代码，如果没有则使用输入的文本
+            var originInput = $("#origin-city");
+            var destinationInput = $("#destination-city");
+
+            var departure_airport = originInput.data("airport-code") || originInput.val();
+            var arrival_airport = destinationInput.data("airport-code") || destinationInput.val();
+
+            // 检查是否为往返票（通过检查按钮状态而不是返程日期值）
+            var isRoundTrip = !$("#return-date").hasClass("text-disable") && !$("#return-date").prop("disabled");
+            var return_date = isRoundTrip ? $("#return-date").val() : null;
+
+            console.log("出发机场代码:", departure_airport);
+            console.log("到达机场代码:", arrival_airport);
+            console.log("是否往返:", isRoundTrip);
+
+            // 去程航班查询
             var formData_depart = {
-                departure_airport: $("#origin-city").val(),
-                arrival_airport: $("#destination-city").val(),
+                departure_airport: departure_airport,
+                arrival_airport: arrival_airport,
                 departure_date: $("#depart-date").val(),
             };
-            var formData_return = {
-                departure_airport: $("#destination-city").val(),
-                arrival_airport: $("#origin-city").val(),
-                departure_date: $("#return-date").val()
-            };
-            // 使用$.ajax调用后端接口
+
+            // 第一次查询：去程航班
             $.ajax({
-                url: '/search_flights', // 后端接口地址
-                type: 'POST', // 请求类型为POST
-                data: JSON.stringify(formData_depart), // 将表单数据转换为JSON字符串
-                contentType: 'application/json', // 设置请求头，告诉后端发送的是JSON格式数据
+                url: '/search_flights',
+                type: 'POST',
+                data: JSON.stringify(formData_depart),
+                contentType: 'application/json',
                 success: function (response) {
-                    alert(response.message);
+                    alert("去程查询: " + response.message);
                     if (response.status === "success") {
-                        localStorage.setItem('flights_info', JSON.stringify(response.flights))
-                        window.location.href = "/choose_flight"; // 跳转到用户主页
+                        localStorage.setItem('flights_info', JSON.stringify(response.flights));
+
+                        // 如果是往返票且有返程日期，则查询返程
+                        if (isRoundTrip && return_date) {
+                            var formData_return = {
+                                departure_airport: arrival_airport,  // 返程：到达变出发
+                                arrival_airport: departure_airport,   // 返程：出发变到达
+                                departure_date: return_date
+                            };
+
+                            // 第二次查询：返程航班
+                            $.ajax({
+                                url: '/search_flights',
+                                type: 'POST',
+                                data: JSON.stringify(formData_return),
+                                contentType: 'application/json',
+                                success: function (returnResponse) {
+                                    alert("返程查询: " + returnResponse.message);
+                                    if (returnResponse.status === "success") {
+                                        // 可以将返程航班信息也存储起来
+                                        localStorage.setItem('return_flights_info', JSON.stringify(returnResponse.flights));
+                                        window.location.href = "/flight_results"; // 跳转到往返结果页
+                                    }
+                                },
+                                error: function (xhr, status, error) {
+                                    console.error('Return flight query error:', error);
+                                    alert('返程航班查询失败!');
+                                }
+                            });
+                        } else {
+                            // 单程票直接跳转
+                            window.location.href = "/choose_flight";
+                        }
                     }
                 },
                 error: function (xhr, status, error) {
-                    // 请求失败，处理错误
-                    console.error('Error:', error);
-                    alert('Query failed!');
+                    console.error('Departure flight query error:', error);
+                    alert('去程航班查询失败!');
                 }
             });
-            var returnDateInput = $("#return-date");
-            var return_date = returnDateInput.length > 0 && returnDateInput.val() ? returnDateInput.val() : null;
-            if (return_date) {
-                // 使用$.ajax调用后端接口
-                $.ajax({
-                    url: '/search_flights',
-                    type: 'POST',
-                    data: JSON.stringify(formData_return),
-                    contentType: 'application/json',
-                    success: function (response) {
-                        alert(response.message);
-                        if (response.status === "success") {
-                            window.location.href = "/flight_results"; // 跳转到用户主页
-                        }
-                    },
-                    error: function (xhr, status, error) {
-                        // 请求失败，处理错误
-                        console.error('Error:', error);
-                        alert('Query failed!');
-                    }
-                });
-            }
         }
+
+        // 同样修复submitForm2函数
         function submitForm2() {
-            // 上面的是预定航班的submitform  这个是查询航班的
             var fnumInput = $("#flightNum");
             var flightnum = fnumInput.length > 0 && fnumInput.val() ? fnumInput.val() : null;
+
             if (flightnum) {
-                var formData = { flightnumber: fnumInput.val() }
+                var formData = { flightnumber: fnumInput.val() };
                 $.ajax({
                     url: '/search_flightnum',
                     type: 'POST',
@@ -411,38 +440,43 @@
                         alert(response.message);
                     },
                     error: function (xhr, status, error) {
-                        // 请求失败，处理错误
                         console.error('Error:', error);
                         alert('Query failed!');
                     }
                 });
-            }
-            else {
+            } else {
+                // 使用机场代码进行查询
+                var originStatusInput = $("#origin-city-status");
+                var destinationStatusInput = $("#destination-city-status");
+
+                var departure_airport = originStatusInput.data("airport-code") || originStatusInput.val();
+                var arrival_airport = destinationStatusInput.data("airport-code") || destinationStatusInput.val();
+
                 var formData = {
-                    departure_airport: $("#origin-city-status").val(),
-                    arrival_airport: $("#destination-city-status").val(),
+                    departure_airport: departure_airport,
+                    arrival_airport: arrival_airport,
                     departure_date: $("#deptDate1").val(),
                 };
-                // 使用$.ajax调用后端接口
+
                 $.ajax({
-                    url: '/search_flights', // 后端接口地址
-                    type: 'POST', // 请求类型为POST
-                    data: JSON.stringify(formData), // 将表单数据转换为JSON字符串
-                    contentType: 'application/json', // 设置请求头，告诉后端发送的是JSON格式数据
+                    url: '/search_flights',
+                    type: 'POST',
+                    data: JSON.stringify(formData),
+                    contentType: 'application/json',
                     success: function (response) {
                         alert(response.message);
                         if (response.status === "success") {
-                            window.location.href = "/homepage"; // 跳转到用户主页
+                            window.location.href = "/homepage";
                         }
                     },
                     error: function (xhr, status, error) {
-                        // 请求失败，处理错误
                         console.error('Error:', error);
                         alert('Query failed!');
                     }
                 });
             }
         }
+
         function submitForm3() {
             // submitform3 用于查询订单
             var formData = {

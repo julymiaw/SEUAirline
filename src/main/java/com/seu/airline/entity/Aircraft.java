@@ -9,8 +9,7 @@ public class Aircraft {
     public Aircraft() {
     }
 
-    public Aircraft(String aircraftId, String aircraftType,
-            Integer economySeats, Integer businessSeats) {
+    public Aircraft(String aircraftId, String aircraftType, Integer economySeats, Integer businessSeats) {
         this.aircraftId = aircraftId;
         this.aircraftType = aircraftType;
         this.economySeats = economySeats;
