@@ -59,7 +59,7 @@ public class OrderDao {
         return jdbcTemplate.update(sql, newStatus, orderId);
     }
 
-    public Optional<Order> findById(String orderId) {
+    public Optional<Order> findByOrderId(String orderId) {
         String sql = "SELECT OrderID, CustomerID, BuyerID, FlightID, SeatType, OrderStatus, OrderTime FROM `Order` WHERE OrderID = ?";
         try {
             Order order = jdbcTemplate.queryForObject(sql, orderRowMapper, orderId);
