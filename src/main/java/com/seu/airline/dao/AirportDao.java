@@ -104,6 +104,7 @@ public class AirportDao {
     // 获取机场总数
     public int count() {
         String sql = "SELECT COUNT(*) FROM Airport";
-        return jdbcTemplate.queryForObject(sql, Integer.class);
+        Integer result = jdbcTemplate.queryForObject(sql, Integer.class);
+        return result != null ? result : 0;
     }
 }

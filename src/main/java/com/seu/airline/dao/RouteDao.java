@@ -4,6 +4,7 @@ import com.seu.airline.entity.Route;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
@@ -19,7 +20,7 @@ public class RouteDao {
 
     private final RowMapper<Route> routeRowMapper = new RowMapper<Route>() {
         @Override
-        public Route mapRow(ResultSet rs, int rowNum) throws SQLException {
+        public Route mapRow(@NonNull ResultSet rs, int rowNum) throws SQLException {
             Route route = new Route();
             route.setRouteId(rs.getString("RouteID"));
             route.setDepartureAirportId(rs.getString("DepartureAirportID"));

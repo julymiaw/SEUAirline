@@ -7,7 +7,6 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
-import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -23,10 +22,10 @@ public class CustomerDao {
         @Override
         public Customer mapRow(@NonNull ResultSet rs, int rowNum) throws SQLException {
             Customer customer = new Customer();
-            customer.setCustomerId(rs.getInt("CustomerID"));
+            customer.setCustomerId(rs.getString("CustomerID")); // ✅ getString
             customer.setName(rs.getString("Name"));
             customer.setPassword(rs.getString("Password"));
-            customer.setAccountBalance(rs.getBigDecimal("AccountBalance"));
+            customer.setAccountBalance(rs.getInt("AccountBalance")); // ✅ getInt (不是getBigDecimal!)
             customer.setPhone(rs.getString("Phone"));
             customer.setEmail(rs.getString("Email"));
             customer.setIdentity(rs.getString("Identity"));
@@ -35,20 +34,43 @@ public class CustomerDao {
         }
     };
 
-    // Flask中的注册功能
+    // 修正注册方法的参数类型
     public int register(Customer customer) {
         String sql = "INSERT INTO Customer (Name, Password, AccountBalance, Phone, Email, Identity, `Rank`) VALUES (?, ?, ?, ?, ?, ?, ?)";
         return jdbcTemplate.update(sql,
                 customer.getName(),
                 customer.getPassword(),
-                customer.getAccountBalance(),
+                customer.getAccountBalance(), // ✅ Integer
                 customer.getPhone(),
                 customer.getEmail(),
                 customer.getIdentity(),
                 customer.getRank());
     }
 
-    // Flask中的多种登录方式：邮箱、身份证、手机号
+    // 修正充值方法的参数类型
+    public int updateAccountBalance(String customerId, Integer newBalance) { // ✅ 参数都改为正确类型
+        String sql = "UPDATE Customer SET AccountBalance = ? WHERE CustomerID = ?";
+        return jdbcTemplate.update(sql, newBalance, customerId);
+    }
+
+    // 修正等级更新方法的参数类型
+    public int incrementRank(String customerId) { // ✅ 参数改为String
+        String sql = "UPDATE Customer SET `Rank` = `Rank` + 1 WHERE CustomerID = ?";
+        return jdbcTemplate.update(sql, customerId);
+    }
+
+    // 修正其他方法的参数类型
+    public Optional<Customer> findById(String customerId) { // ✅ 参数改为String
+        String sql = "SELECT CustomerID, Name, Password, AccountBalance, Phone, Email, Identity, `Rank` FROM Customer WHERE CustomerID = ?";
+        try {
+            Customer customer = jdbcTemplate.queryForObject(sql, customerRowMapper, customerId);
+            return Optional.ofNullable(customer);
+        } catch (Exception e) {
+            return Optional.empty();
+        }
+    }
+
+    // 其他登录方法保持不变（参数已经是String）
     public Optional<Customer> findByEmailAndPassword(String email, String password) {
         String sql = "SELECT CustomerID, Name, Password, AccountBalance, Phone, Email, Identity, `Rank` FROM Customer WHERE Email = ? AND Password = ?";
         try {
@@ -79,33 +101,9 @@ public class CustomerDao {
         }
     }
 
-    // Flask中的忘记密码功能
     public int updatePasswordByEmail(String email, String newPassword) {
         String sql = "UPDATE Customer SET Password = ? WHERE Email = ?";
         return jdbcTemplate.update(sql, newPassword, email);
-    }
-
-    // Flask中的充值功能
-    public int updateAccountBalance(Integer customerId, BigDecimal newBalance) {
-        String sql = "UPDATE Customer SET AccountBalance = ? WHERE CustomerID = ?";
-        return jdbcTemplate.update(sql, newBalance, customerId);
-    }
-
-    // Flask中的等级更新功能
-    public int incrementRank(Integer customerId) {
-        String sql = "UPDATE Customer SET `Rank` = `Rank` + 1 WHERE CustomerID = ?";
-        return jdbcTemplate.update(sql, customerId);
-    }
-
-    // 基础查询方法
-    public Optional<Customer> findById(Integer customerId) {
-        String sql = "SELECT CustomerID, Name, Password, AccountBalance, Phone, Email, Identity, `Rank` FROM Customer WHERE CustomerID = ?";
-        try {
-            Customer customer = jdbcTemplate.queryForObject(sql, customerRowMapper, customerId);
-            return Optional.ofNullable(customer);
-        } catch (Exception e) {
-            return Optional.empty();
-        }
     }
 
     public List<Customer> findAll() {
@@ -113,7 +111,6 @@ public class CustomerDao {
         return jdbcTemplate.query(sql, customerRowMapper);
     }
 
-    // Flask中的添加乘客功能 - 检查客户是否存在
     public Optional<Customer> findByPhoneAndIdentityAndName(String phone, String identity, String name) {
         String sql = "SELECT CustomerID, Name, Password, AccountBalance, Phone, Email, Identity, `Rank` FROM Customer WHERE Phone = ? AND Identity = ? AND Name = ?";
         try {
@@ -124,7 +121,6 @@ public class CustomerDao {
         }
     }
 
-    // 插入简化的客户信息（乘客）
     public int insertBasicCustomer(String phone, String identity, String name) {
         String sql = "INSERT INTO Customer (Phone, Identity, Name) VALUES (?, ?, ?)";
         return jdbcTemplate.update(sql, phone, identity, name);

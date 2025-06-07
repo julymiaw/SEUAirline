@@ -1,12 +1,10 @@
 package com.seu.airline.entity;
 
-import java.math.BigDecimal;
-
 public class Customer {
-    private Integer customerId;
+    private String customerId;
     private String name;
     private String password;
-    private BigDecimal accountBalance;
+    private Integer accountBalance;
     private String phone;
     private String email;
     private String identity;
@@ -16,11 +14,11 @@ public class Customer {
     public Customer() {
     }
 
-    public Customer(String name, String password, BigDecimal accountBalance,
+    public Customer(String name, String password, Integer accountBalance,
             String phone, String email, String identity, Integer rank) {
         this.name = name;
         this.password = password;
-        this.accountBalance = accountBalance != null ? accountBalance : BigDecimal.ZERO;
+        this.accountBalance = accountBalance != null ? accountBalance : 0; // ✅ Integer
         this.phone = phone;
         this.email = email;
         this.identity = identity;
@@ -28,11 +26,11 @@ public class Customer {
     }
 
     // Getter和Setter方法
-    public Integer getCustomerId() {
+    public String getCustomerId() {
         return customerId;
     }
 
-    public void setCustomerId(Integer customerId) {
+    public void setCustomerId(String customerId) {
         this.customerId = customerId;
     }
 
@@ -52,11 +50,11 @@ public class Customer {
         this.password = password;
     }
 
-    public BigDecimal getAccountBalance() {
+    public Integer getAccountBalance() {
         return accountBalance;
-    }
+    } // ✅ Integer
 
-    public void setAccountBalance(BigDecimal accountBalance) {
+    public void setAccountBalance(Integer accountBalance) {
         this.accountBalance = accountBalance;
     }
 
@@ -95,7 +93,7 @@ public class Customer {
     @Override
     public String toString() {
         return "Customer{" +
-                "customerId=" + customerId +
+                "customerId='" + customerId + '\'' +
                 ", name='" + name + '\'' +
                 ", phone='" + phone + '\'' +
                 ", email='" + email + '\'' +

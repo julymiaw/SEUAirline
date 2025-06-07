@@ -1,38 +1,38 @@
 package com.seu.airline.entity;
 
 public class Passenger {
-    private Integer hostId; // 对应Flask中的HostID
-    private Integer guestId; // 对应Flask中的GuestID
+    private String hostId;
+    private String guestId;
 
     public Passenger() {
     }
 
-    public Passenger(Integer hostId, Integer guestId) {
+    public Passenger(String hostId, String guestId) {
         this.hostId = hostId;
         this.guestId = guestId;
     }
 
-    public Integer getHostId() {
+    public String getHostId() {
         return hostId;
     }
 
-    public void setHostId(Integer hostId) {
+    public void setHostId(String hostId) {
         this.hostId = hostId;
     }
 
-    public Integer getGuestId() {
+    public String getGuestId() {
         return guestId;
     }
 
-    public void setGuestId(Integer guestId) {
+    public void setGuestId(String guestId) {
         this.guestId = guestId;
     }
 
     @Override
     public String toString() {
         return "Passenger{" +
-                "hostId=" + hostId +
-                ", guestId=" + guestId +
+                "hostId='" + hostId + '\'' +
+                ", guestId='" + guestId + '\'' +
                 '}';
     }
 }

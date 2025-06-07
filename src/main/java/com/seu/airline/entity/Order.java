@@ -3,18 +3,19 @@ package com.seu.airline.entity;
 import java.time.LocalDateTime;
 
 public class Order {
-    private Integer orderId; // 注意：数据库中可能是自增主键
-    private Integer customerId; // 对应GuestID
-    private Integer buyerId; // 对应HostID
+    private String orderId;
+    private String customerId;
+    private String buyerId;
     private String flightId;
-    private String seatType; // "Economy" 或 "Business"
-    private String orderStatus; // "Established", "Paid", "Canceled"
+    private String seatType;
+    private String orderStatus;
     private LocalDateTime orderTime;
 
+    // 构造函数
     public Order() {
     }
 
-    public Order(Integer customerId, Integer buyerId, String flightId,
+    public Order(String customerId, String buyerId, String flightId,
             String seatType, String orderStatus, LocalDateTime orderTime) {
         this.customerId = customerId;
         this.buyerId = buyerId;
@@ -25,27 +26,27 @@ public class Order {
     }
 
     // Getter和Setter方法
-    public Integer getOrderId() {
+    public String getOrderId() {
         return orderId;
     }
 
-    public void setOrderId(Integer orderId) {
+    public void setOrderId(String orderId) {
         this.orderId = orderId;
     }
 
-    public Integer getCustomerId() {
+    public String getCustomerId() {
         return customerId;
-    }
+    } // ✅ 修改为String
 
-    public void setCustomerId(Integer customerId) {
+    public void setCustomerId(String customerId) {
         this.customerId = customerId;
     }
 
-    public Integer getBuyerId() {
+    public String getBuyerId() {
         return buyerId;
-    }
+    } // ✅ 修改为String
 
-    public void setBuyerId(Integer buyerId) {
+    public void setBuyerId(String buyerId) {
         this.buyerId = buyerId;
     }
 
@@ -84,9 +85,9 @@ public class Order {
     @Override
     public String toString() {
         return "Order{" +
-                "orderId=" + orderId +
-                ", customerId=" + customerId +
-                ", buyerId=" + buyerId +
+                "orderId='" + orderId + '\'' +
+                ", customerId='" + customerId + '\'' + // ✅ 字符串格式
+                ", buyerId='" + buyerId + '\'' + // ✅ 字符串格式
                 ", flightId='" + flightId + '\'' +
                 ", seatType='" + seatType + '\'' +
                 ", orderStatus='" + orderStatus + '\'' +
