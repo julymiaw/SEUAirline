@@ -5,10 +5,15 @@ import com.seu.airline.entity.Customer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
+
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Controller
 public class UserController {
@@ -30,32 +35,54 @@ public class UserController {
 
     @PostMapping("/register")
     @ResponseBody
-    public Map<String, Object> register(@RequestBody Map<String, Object> data) {
+    public Map<String, Object> register(@Valid @RequestBody Customer customer,
+            BindingResult bindingResult) {
         Map<String, Object> response = new HashMap<>();
-        try {
-            // 复用CustomerDao，构建Customer对象
-            Customer customer = new Customer();
-            customer.setName((String) data.get("rname"));
-            customer.setPassword((String) data.get("password"));
-            customer.setAccountBalance((Integer) data.getOrDefault("AccountBalance", 0));
-            customer.setPhone((String) data.get("phone"));
-            customer.setEmail((String) data.getOrDefault("email", ""));
-            customer.setIdentity((String) data.get("id"));
-            customer.setRank((Integer) data.getOrDefault("rank", 0));
 
-            // 使用DAO层方法
-            int result = customerDao.register(customer);
-            if (result > 0) {
-                response.put("message", "Registration successful");
-                return response;
-            } else {
-                response.put("error", "Registration failed");
+        try {
+            // 检查验证错误
+            if (bindingResult.hasErrors()) {
+                List<String> errors = bindingResult.getFieldErrors()
+                        .stream()
+                        .map(FieldError::getDefaultMessage)
+                        .collect(Collectors.toList());
+                response.put("error", "数据验证失败");
+                response.put("details", errors);
+                response.put("status", "validation_error");
                 return response;
             }
+
+            // 设置默认值
+            if (customer.getAccountBalance() == null) {
+                customer.setAccountBalance(0);
+            }
+            if (customer.getRank() == null) {
+                customer.setRank(0);
+            }
+
+            // 检查邮箱是否已存在
+            Optional<Customer> existingByEmail = customerDao.findByEmailAndPassword(
+                    customer.getEmail(), "");
+            if (existingByEmail.isPresent()) {
+                response.put("error", "该邮箱已被注册");
+                response.put("status", "error");
+                return response;
+            }
+
+            // 使用DAO层方法注册
+            int result = customerDao.register(customer);
+            if (result > 0) {
+                response.put("message", "注册成功！");
+                response.put("status", "success");
+            } else {
+                response.put("error", "注册失败，请稍后重试");
+                response.put("status", "error");
+            }
         } catch (Exception e) {
-            response.put("error", e.getMessage());
-            return response;
+            response.put("error", "注册过程中发生错误: " + e.getMessage());
+            response.put("status", "error");
         }
+        return response;
     }
 
     // 对应 Flask: @app.route("/login", methods=["POST"])
@@ -63,11 +90,25 @@ public class UserController {
     @ResponseBody
     public Map<String, Object> login(@RequestBody Map<String, String> data, HttpSession session) {
         Map<String, Object> response = new HashMap<>();
+
         try {
             String username = data.get("username");
             String password = data.get("password");
 
-            // 复用DAO层的三种登录方式，完全对应Flask逻辑
+            // 基础验证
+            if (username == null || username.trim().isEmpty()) {
+                response.put("status", "error");
+                response.put("message", "用户名不能为空");
+                return response;
+            }
+
+            if (password == null || password.trim().isEmpty()) {
+                response.put("status", "error");
+                response.put("message", "密码不能为空");
+                return response;
+            }
+
+            // 复用DAO层的三种登录方式
             Optional<Customer> user = Optional.empty();
 
             // 尝试邮箱登录
@@ -86,13 +127,15 @@ public class UserController {
             if (user.isPresent()) {
                 session.setAttribute("user_id", user.get().getCustomerId());
                 response.put("status", "success");
-                response.put("message", "Login successful");
+                response.put("message", "登录成功");
+                response.put("user_name", user.get().getName());
             } else {
                 response.put("status", "error");
-                response.put("message", "Invalid credentials");
+                response.put("message", "用户名或密码错误");
             }
         } catch (Exception e) {
-            response.put("error", e.getMessage());
+            response.put("status", "error");
+            response.put("message", "登录过程中发生错误: " + e.getMessage());
         }
         return response;
     }
@@ -129,21 +172,43 @@ public class UserController {
     @ResponseBody
     public Map<String, Object> forgetPassword(@RequestBody Map<String, String> data) {
         Map<String, Object> response = new HashMap<>();
+
         try {
             String email = data.get("email");
             String password = data.get("password");
 
-            // 复用DAO层方法
+            // 基础验证
+            if (email == null || email.trim().isEmpty()) {
+                response.put("status", "error");
+                response.put("message", "邮箱不能为空");
+                return response;
+            }
+
+            if (password == null || password.length() < 6) {
+                response.put("status", "error");
+                response.put("message", "新密码长度至少6位");
+                return response;
+            }
+
+            // 验证邮箱格式
+            if (!email.matches("^[A-Za-z0-9+_.-]+@([A-Za-z0-9.-]+\\.[A-Za-z]{2,})$")) {
+                response.put("status", "error");
+                response.put("message", "邮箱格式不正确");
+                return response;
+            }
+
+            // 使用DAO层方法
             int result = customerDao.updatePasswordByEmail(email, password);
             if (result > 0) {
                 response.put("status", "success");
-                response.put("message", "Forget password successful");
+                response.put("message", "密码重置成功");
             } else {
                 response.put("status", "error");
-                response.put("message", "Email not found");
+                response.put("message", "邮箱不存在");
             }
         } catch (Exception e) {
-            response.put("error", e.getMessage());
+            response.put("status", "error");
+            response.put("message", "密码重置过程中发生错误: " + e.getMessage());
         }
         return response;
     }
@@ -166,15 +231,16 @@ public class UserController {
     @ResponseBody
     public Map<String, Object> charge(@RequestBody Map<String, Object> data, HttpSession session) {
         Map<String, Object> response = new HashMap<>();
+
         try {
             String userId = (String) session.getAttribute("user_id");
             if (userId == null) {
-                response.put("error", "Please login first");
+                response.put("error", "请先登录");
                 response.put("status", "error");
                 return response;
             }
 
-            // 🔧 修复：确保正确处理money参数的各种类型
+            // 改进的金额处理和验证
             Object moneyObj = data.get("money");
             Integer money;
 
@@ -184,42 +250,48 @@ public class UserController {
                 try {
                     money = Integer.parseInt((String) moneyObj);
                 } catch (NumberFormatException e) {
-                    response.put("error", "Invalid money format");
+                    response.put("error", "充值金额格式不正确");
                     response.put("status", "error");
                     return response;
                 }
             } else if (moneyObj instanceof Double) {
                 money = ((Double) moneyObj).intValue();
             } else {
-                response.put("error", "Invalid money format");
+                response.put("error", "充值金额格式不正确");
                 response.put("status", "error");
                 return response;
             }
 
+            // 验证充值金额
             if (money <= 0) {
                 response.put("error", "充值金额必须大于0");
                 response.put("status", "error");
                 return response;
             }
 
-            // 🔧 使用CustomerDao实现Flask的完整充值逻辑
+            if (money > 50000) {
+                response.put("error", "单次充值金额不能超过50000元");
+                response.put("status", "error");
+                return response;
+            }
+
+            // 使用CustomerDao实现充值逻辑
             Optional<Customer> customer = customerDao.findById(userId);
 
             if (customer.isPresent()) {
                 Integer currentBalance = customer.get().getAccountBalance();
+                currentBalance = currentBalance != null ? currentBalance : 0; // 防止空指针
                 Integer newBalance = currentBalance + money;
 
-                // 使用DAO更新余额
                 int result = customerDao.updateAccountBalance(userId, newBalance);
                 if (result > 0) {
-                    // 🔧 修复：返回前端期望的字段
                     response.put("message", "充值成功！");
                     response.put("status", "success");
                     response.put("new_balance", newBalance);
                     response.put("charged_amount", money);
                     response.put("original_balance", currentBalance);
                 } else {
-                    response.put("error", "充值失败");
+                    response.put("error", "充值失败，请稍后重试");
                     response.put("status", "error");
                 }
             } else {
